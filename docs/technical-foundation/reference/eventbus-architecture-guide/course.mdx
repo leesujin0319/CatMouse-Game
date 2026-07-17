@@ -1,0 +1,572 @@
+---
+title: 1-3 전역 메시지 브로커 (Event-Bus)
+summary: 전역 이벤트 버스 구조의 설계 원칙과 실무 적용 가이드를 정리한 기술 문서입니다.
+slug: eventbus-architecture-guide
+courseCategory: Unity 아키텍처 설계
+courseCategoryId: technical-design
+courseCategoryOrder: 11
+courseSubCategory: 1. 기반 시스템
+courseSubCategoryId: foundation-systems
+courseSubCategoryOrder: 1
+order: 3
+status: ready
+---
+<!-- page -->
+
+## [기술 기획안] 전역 메시지 브로커 (Event-Bus)
+
+> 최종 수정일: 2026-04-27
+> 문서 상태: `Reviewable`
+
+---
+
+## 1. 개요 및 도입 배경
+
+`EventBus`는 객체 간 직접 참조를 줄이기 위해 **사실(Fact) 기반 메시지 전달**을 사용하는 구조입니다. 목표는 모든 통신을 이벤트로 바꾸는 데 있지 않습니다. 특정 액터가 다른 시스템을 직접 호출하지 않아도 될 때, 발행자와 수신자의 책임을 분리해 결합도를 낮추는 데 있습니다.
+
+이 문서는 특히 `SceneDI`, `SkillSystem`, UI, 사운드, 퀘스트 같은 시스템이 서로를 직접 알지 않고도 협력할 수 있게, 이벤트를 어디까지 써야 하고 어디서 멈춰야 하는지 정의합니다.
+
+**이 문서가 바로 답하는 질문**
+
+- 어떤 경우에 직접 호출 대신 이벤트를 써야 하는가
+- 이벤트 페이로드는 어떤 형태로 정의해야 하는가
+- 딕셔너리 기반 구조와 제네릭 정적 구조는 무엇이 다른가
+- 메모리 누수, 순환 발행, 실행 순서 의존 같은 실패는 어떻게 막는가
+
+---
+
+## 2. 문제 정의
+
+규모가 커진 프로젝트에서는 플레이어, 보스, UI, 사운드, 업적, 퀘스트, 연출 시스템이 서로를 직접 호출하기 시작합니다. 처음에는 빠르지만, 시간이 지나면 한쪽 수정이 다른 쪽을 깨뜨리고, 씬별 예외 처리와 테스트 비용이 같이 늘어납니다.
+
+예를 들어 플레이어가 피격됐을 때 `HPBarUI`, `DamageFlash`, `SoundManager`, `QuestManager`, `Analytics`까지 직접 호출한다면, 플레이어는 자신의 책임을 넘어 너무 많은 후속 결과를 알아야 합니다. 이 상태에서는 시스템 하나를 끄거나 교체하는 것조차 어려워집니다.
+
+`EventBus`는 이 문제를 "결과를 직접 명령하지 않고 사실을 방송한다"는 방식으로 줄입니다. 발행자는 `PlayerDamagedEvent` 같은 사실을 알리고, 수신자는 필요한 경우에만 반응합니다. 다만 이 방식도 무분별하게 쓰면 디버깅 난이도, 실행 순서 불명확, 수명 누락 문제를 만듭니다. 그래서 어떤 이벤트를 어떤 규칙으로 정의할지 문서 기준이 필요합니다.
+
+---
+
+## 3. 설계 목표
+
+- 발행자와 수신자의 직접 참조를 줄인다.
+- 이벤트를 명령이 아니라 사실 전달로 제한한다.
+- 페이로드를 가볍고 명확한 구조체로 정의한다.
+- 메모리 누수와 수명 불일치를 구독 규약으로 막는다.
+- 핫패스에서도 과도한 오버헤드가 생기지 않도록 구조를 단순화한다.
+- 신규 개발자가 이벤트 생성 위치와 구독 위치를 문서만으로 추적할 수 있게 한다.
+
+---
+
+## 4. 범위와 비범위
+
+### In Scope
+
+- 게임 내 시스템 간 사실 전달 이벤트
+- 전역 정적 이벤트 버스 구조
+- 이벤트 페이로드 정의 규칙
+- 구독/해지 수명주기 규약
+- 실행 순서, 재진입, 디버깅 정책
+
+### Out of Scope
+
+- 네트워크 메시지 프로토콜
+- 영속 저장을 위한 로그 시스템
+- 모든 로직을 이벤트 기반으로 치환하는 구조
+- 요청/응답이 필요한 동기 API 대체
+
+`EventBus`는 "누군가 반응할 수 있는 사실"을 방송하는 데 적합합니다. 반대로 결과를 반드시 받아야 하는 요청, 순차 실행이 강한 초기화 로직, 데이터 조회 API까지 이벤트로 바꾸는 것은 이 문서의 권장 범위가 아닙니다.
+
+---
+
+## 5. 이벤트 정의 규칙
+
+이벤트는 가능하면 **가벼운 값 타입 구조체**로 정의하는 편이 안전합니다.
+
+Reference Example: `PlayerDamagedEvent`
+
+```csharp
+public readonly struct PlayerDamagedEvent
+{
+    public readonly int CurrentHP;
+    public readonly int MaxHP;
+
+    public PlayerDamagedEvent(int currentHP, int maxHP)
+    {
+        CurrentHP = currentHP;
+        MaxHP = maxHP;
+    }
+}
+```
+
+이 구조가 중요한 이유는 두 가지입니다.
+
+- 이벤트가 변경 가능한 공유 상태가 되지 않게 막습니다.
+- 피격, 처치, 언어 변경처럼 자주 발생하는 사실 전달을 비교적 가볍게 처리할 수 있습니다.
+
+이벤트 이름은 가능한 한 **주체 + 과거형 동사 + Event** 형태로 두는 편이 읽기 좋습니다. `PlayerDamagedEvent`, `MonsterKilledEvent`, `LanguageChangedEvent`처럼 "이미 발생한 사실"로 읽혀야 합니다.
+
+---
+
+## 6. 코어 구조 선택
+
+### 6.1 딕셔너리 기반 구조
+
+딕셔너리 기반 구조는 직관적이고 범용적입니다.
+
+```csharp
+using System;
+using System.Collections.Generic;
+
+public static class StandardEventBus
+{
+    private static readonly Dictionary<Type, List<Delegate>> _listeners = new();
+
+    public static void Subscribe<T>(Action<T> listener) where T : struct
+    {
+        var eventType = typeof(T);
+        if (!_listeners.ContainsKey(eventType))
+        {
+            _listeners[eventType] = new List<Delegate>();
+        }
+
+        if (!_listeners[eventType].Contains(listener))
+        {
+            _listeners[eventType].Add(listener);
+        }
+    }
+
+    public static void Unsubscribe<T>(Action<T> listener) where T : struct
+    {
+        var eventType = typeof(T);
+        if (_listeners.TryGetValue(eventType, out var delegates))
+        {
+            delegates.Remove(listener);
+            if (delegates.Count == 0)
+            {
+                _listeners.Remove(eventType);
+            }
+        }
+    }
+
+    public static void Publish<T>(T payload) where T : struct
+    {
+        var eventType = typeof(T);
+        if (_listeners.TryGetValue(eventType, out var delegates))
+        {
+            for (var i = 0; i < delegates.Count; i++)
+            {
+                if (delegates[i] is Action<T> action)
+                {
+                    action(payload);
+                }
+            }
+        }
+    }
+}
+```
+
+장점은 이해하기 쉽다는 점입니다. 단점은 발행 시 타입 조회와 델리게이트 변환이 계속 들어간다는 점입니다.
+
+### 6.2 제네릭 정적 구조
+
+핫패스가 더 중요하면 제네릭 정적 구조가 단순합니다.
+
+```csharp
+using System;
+
+public static class EventBus<T> where T : struct
+{
+    private static Action<T> _onEvent;
+
+    public static void Subscribe(Action<T> listener) => _onEvent += listener;
+    public static void Unsubscribe(Action<T> listener) => _onEvent -= listener;
+
+    public static void Publish(T payload)
+    {
+        _onEvent?.Invoke(payload);
+    }
+}
+```
+
+이 구조는 이벤트 타입마다 정적 저장 공간이 분리되므로, 발행 시 딕셔너리 조회 없이 바로 호출할 수 있습니다. 구조가 단순해지는 대신, 모든 이벤트가 정적 수명주기를 갖는다는 점을 더 엄격하게 관리해야 합니다.
+
+---
+
+## 7. 어디에 쓰고 어디에 쓰지 말아야 하는가
+
+### 7.1 잘 맞는 경우
+
+- 플레이어 피격 사실을 UI, 사운드, 연출이 각각 반응해야 할 때
+- 몬스터 처치 사실을 퀘스트, 업적, 로그 시스템이 나눠 받아야 할 때
+- 설정 변경 사실을 여러 UI가 동시에 갱신해야 할 때
+
+### 7.2 맞지 않는 경우
+
+- 결과값을 바로 받아야 하는 질의 API
+- 실행 순서가 엄격한 초기화 파이프라인
+- 실패 처리와 재시도 결과를 즉시 알아야 하는 요청
+- 수신자가 반드시 하나여야 하는 단일 책임 호출
+
+이벤트는 순서를 보장하는 절차 제어보다, 분산 반응이 필요한 사실 전달에 더 적합합니다.
+
+---
+
+## 8. 성능과 트레이드오프
+
+### 8.1 얻는 것
+
+- 발행자는 후속 시스템을 직접 몰라도 됩니다.
+- 시스템 추가와 제거가 비교적 쉬워집니다.
+- UI, 연출, 로그 같은 주변 시스템을 분리하기 좋습니다.
+
+### 8.2 주의할 점
+
+- 누가 발행했는지 추적이 어려워질 수 있습니다.
+- 실행 순서에 기대면 쉽게 깨집니다.
+- 구독 해지가 빠지면 정적 참조가 남습니다.
+- 이벤트를 명령처럼 쓰면 구조가 흐려집니다.
+
+---
+
+## 9. 실패 경로와 안티 패턴
+
+### 9.1 수명 누락
+
+`OnEnable`에서 구독하고 `OnDisable`에서 해지하지 않으면 파괴된 객체가 정적 콜백에 남을 수 있습니다.
+
+### 9.2 명령형 이벤트
+
+`UpdateUIEvent`, `PlaySoundNowEvent`처럼 특정 수신자에게 일을 시키는 명령형 이름은 피하는 편이 좋습니다. 이벤트는 사실이어야 합니다.
+
+### 9.3 실행 순서 의존
+
+한 수신자가 다른 수신자보다 먼저 실행된다고 가정하면, 구독 순서나 구조 변경 시 쉽게 깨집니다.
+
+### 9.4 재진입과 무한 루프
+
+이벤트를 수신한 로직이 다시 같은 이벤트를 발행하면 무한 재귀나 예기치 않은 연쇄 반응이 생길 수 있습니다.
+
+### 9.5 이벤트 남발
+
+단순 메서드 호출이 더 명확한 곳까지 모두 이벤트로 바꾸면 추적성과 책임이 오히려 나빠집니다.
+
+---
+
+## 10. 디버깅 및 검증 포인트
+
+- 이벤트 정의가 도메인별로 모여 있는가
+- 발행자와 수신자가 직접 참조 없이 동작하는가
+- 구독과 해지가 수명주기 쌍으로 맞아 있는가
+- 이벤트가 사실 전달인지, 명령 disguised 형태인지 확인하는가
+- 발행 추적용 로깅이나 에디터 도구가 있는가
+
+---
+
+## 11. 리뷰 체크리스트
+
+- 이벤트 이름이 사실 중심으로 정의되어 있는가
+- 말단 시스템이 이벤트를 통해 적절히 분리되어 있는가
+- 구독 해지 누락 가능성이 보이는가
+- 실행 순서 의존이 숨어 있지 않은가
+- 직접 호출이 더 명확한 곳까지 이벤트를 남발하지 않았는가
+
+<!-- page -->
+
+## [개발 가이드] 전역 메시지 브로커 (Event-Bus)
+
+> 최종 수정일: 2026-04-27
+> 문서 상태: `Reviewable`
+
+---
+
+## 1. 개요 및 읽는 순서
+
+이 가이드는 `EventBus`를 실제 게임 로직에 붙일 때, 무엇을 발행하고 어디서 구독하며, 어떤 수명주기로 해지해야 하는지를 코드 기준으로 설명합니다.
+
+읽는 순서는 아래가 자연스럽습니다.
+
+1. 피격 같은 기본 발행/구독 흐름을 봅니다.
+2. 퀘스트, 로컬라이제이션처럼 분산 반응 예제를 봅니다.
+3. 구독 해지와 디버깅 규약을 봅니다.
+
+---
+
+## 2. 이 가이드가 전제하는 계약
+
+- 발행자는 사실만 방송한다.
+- 수신자는 필요할 때만 반응한다.
+- 발행자가 수신 결과를 알 필요는 없다.
+- 구독과 해지는 객체 수명주기에 맞춰 쌍으로 관리한다.
+
+이 계약이 무너지면 이벤트 버스는 느슨한 결합 구조가 아니라, 추적이 어려운 간접 호출 집합이 됩니다.
+
+---
+
+## 3. 코어 이벤트 버스 예시
+
+Reference Example: `EventBus<T>`
+
+```csharp
+using System;
+
+public static class EventBus<T> where T : struct
+{
+    private static Action<T> _onEvent;
+
+    public static void Subscribe(Action<T> listener) => _onEvent += listener;
+    public static void Unsubscribe(Action<T> listener) => _onEvent -= listener;
+
+    public static void Publish(T payload)
+    {
+        _onEvent?.Invoke(payload);
+    }
+}
+```
+
+이 구조를 기준으로 아래 예제를 읽으면 됩니다.
+
+---
+
+## 4. 기본 활용: 발행자와 수신자 분리
+
+### 4.1 발행자 예시
+
+```csharp
+public readonly struct PlayerDamagedEvent
+{
+    public readonly int CurrentHP;
+    public readonly int MaxHP;
+
+    public PlayerDamagedEvent(int currentHP, int maxHP)
+    {
+        CurrentHP = currentHP;
+        MaxHP = maxHP;
+    }
+}
+
+public class PlayerController : MonoBehaviour
+{
+    private int _hp = 100;
+
+    public void TakeDamage(int damage)
+    {
+        _hp -= damage;
+        EventBus<PlayerDamagedEvent>.Publish(new PlayerDamagedEvent(_hp, 100));
+    }
+}
+```
+
+플레이어는 피격 사실만 알립니다. HP 바, 사운드, 연출, 퀘스트 처리 같은 후속 반응은 알 필요가 없습니다.
+
+### 4.2 수신자 예시
+
+```csharp
+public class HPBarUI : MonoBehaviour
+{
+    private void OnEnable()
+    {
+        EventBus<PlayerDamagedEvent>.Subscribe(UpdateUI);
+    }
+
+    private void OnDisable()
+    {
+        EventBus<PlayerDamagedEvent>.Unsubscribe(UpdateUI);
+    }
+
+    private void UpdateUI(PlayerDamagedEvent payload)
+    {
+        barImage.fillAmount = (float)payload.CurrentHP / payload.MaxHP;
+    }
+}
+```
+
+수신자는 자신이 필요로 하는 사실만 듣고 반응합니다. 발행자 수정 없이도 수신자를 추가하거나 제거할 수 있습니다.
+
+---
+
+## 5. 실무 패턴
+
+### 5.1 퀘스트/업적 분리
+
+```csharp
+public readonly struct MonsterKilledEvent
+{
+    public readonly string MonsterID;
+
+    public MonsterKilledEvent(string monsterID)
+    {
+        MonsterID = monsterID;
+    }
+}
+
+public class GoblinEntity : MonoBehaviour
+{
+    public void Die()
+    {
+        EventBus<MonsterKilledEvent>.Publish(new MonsterKilledEvent("Goblin_01"));
+        Destroy(gameObject);
+    }
+}
+
+public class QuestManager : MonoBehaviour
+{
+    private void OnEnable()
+    {
+        EventBus<MonsterKilledEvent>.Subscribe(OnMonsterKilled);
+    }
+
+    private void OnDisable()
+    {
+        EventBus<MonsterKilledEvent>.Unsubscribe(OnMonsterKilled);
+    }
+
+    private void OnMonsterKilled(MonsterKilledEvent payload)
+    {
+        if (payload.MonsterID == "Goblin_01")
+        {
+            _goblinKillCount++;
+        }
+    }
+}
+```
+
+전투 로직은 퀘스트 시스템을 직접 알 필요가 없습니다.
+
+### 5.2 설정/로컬라이제이션 갱신
+
+```csharp
+public readonly struct LanguageChangedEvent
+{
+    public readonly string LocaleCode;
+
+    public LanguageChangedEvent(string localeCode)
+    {
+        LocaleCode = localeCode;
+    }
+}
+
+public class LocalizedText : MonoBehaviour
+{
+    [SerializeField] private string _textKey;
+    private Text _text;
+
+    private void Awake()
+    {
+        _text = GetComponent<Text>();
+    }
+
+    private void OnEnable()
+    {
+        EventBus<LanguageChangedEvent>.Subscribe(RefreshText);
+    }
+
+    private void OnDisable()
+    {
+        EventBus<LanguageChangedEvent>.Unsubscribe(RefreshText);
+    }
+
+    private void RefreshText(LanguageChangedEvent payload)
+    {
+        _text.text = LocalizationManager.GetText(_textKey, payload.LocaleCode);
+    }
+}
+```
+
+이 패턴은 중앙 매니저가 모든 텍스트를 직접 찾는 것보다 더 단순할 수 있습니다.
+
+### 5.3 상태이상/연출 분산
+
+```csharp
+public readonly struct StatusEffectAppliedEvent
+{
+    public readonly string EffectID;
+
+    public StatusEffectAppliedEvent(string effectID)
+    {
+        EffectID = effectID;
+    }
+}
+
+public class PlayerVFXController : MonoBehaviour
+{
+    private void OnEnable()
+    {
+        EventBus<StatusEffectAppliedEvent>.Subscribe(SpawnVFX);
+    }
+
+    private void OnDisable()
+    {
+        EventBus<StatusEffectAppliedEvent>.Unsubscribe(SpawnVFX);
+    }
+
+    private void SpawnVFX(StatusEffectAppliedEvent payload)
+    {
+        if (payload.EffectID == "Poison")
+        {
+            Instantiate(PoisonGasPrefab, transform.position, Quaternion.identity);
+        }
+    }
+}
+```
+
+연출과 상태 적용 로직을 직접 연결하지 않아도 됩니다.
+
+---
+
+## 6. 구독 수명주기 규약
+
+가장 중요한 규칙은 구독과 해지가 항상 쌍으로 있어야 한다는 점입니다.
+
+- `OnEnable`에서 구독했다면 `OnDisable`에서 해지합니다.
+- 정적 리스너가 아닌 이상, 수명주기 밖에 콜백이 남지 않게 합니다.
+- 씬 전환이 잦은 UI와 액터일수록 이 규칙이 더 중요합니다.
+
+이 규칙이 깨지면 파괴된 객체가 이벤트를 계속 받거나, 메모리 참조가 남을 수 있습니다.
+
+---
+
+## 7. 디버깅 보조
+
+전역 이벤트는 발행과 수신이 분리되어 있어서, 누가 무엇을 쐈는지 추적이 어려울 수 있습니다. 에디터 전용 로거를 두는 편이 좋습니다.
+
+```csharp
+#if UNITY_EDITOR
+public static class EventBusDebug
+{
+    public static void Record<T>(T payload)
+    {
+        Debug.Log($"[EventBus] {typeof(T).Name}: {payload}");
+    }
+}
+#endif
+```
+
+필요하면 `Publish` 내부에서 에디터 전용으로만 이 로거를 호출해 최근 이벤트 흐름을 남길 수 있습니다.
+
+---
+
+## 8. 자주 하는 실수
+
+### 실수 1. 이벤트로 명령을 내리는 것
+
+이벤트는 사실 전달이 더 적합합니다.
+
+### 실수 2. 구독 해지를 빼먹는 것
+
+파괴된 객체 참조가 남을 수 있습니다.
+
+### 실수 3. 직접 호출이 더 간단한 곳까지 이벤트로 바꾸는 것
+
+추적성과 명확성이 떨어집니다.
+
+### 실수 4. 이벤트 순서에 기대는 것
+
+구독 순서에 따라 결과가 달라지는 구조는 불안정합니다.
+
+---
+
+## 9. 디버깅 포인트
+
+- 발행자와 수신자의 직접 참조가 정말 없어졌는지 확인합니다.
+- 구독/해지가 수명주기 쌍으로 맞는지 확인합니다.
+- 이벤트 이름이 사실 중심인지 확인합니다.
+- 동일 이벤트 연쇄 발행으로 루프가 생기지 않는지 확인합니다.
