@@ -358,6 +358,8 @@ GameObject:
   - component: {fileID: 1842839051}
   - component: {fileID: 1842839050}
   - component: {fileID: 1842839049}
+  - component: {fileID: 1842839054}
+  - component: {fileID: 1842839053}
   - component: {fileID: 1842839052}
   m_Layer: 0
   m_Name: Player
@@ -454,7 +456,36 @@ MonoBehaviour:
   m_GameObject: {fileID: 1842839048}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3a6309ce261291842a9e24e6fa3680b6, type: 3}
+  m_Script: {fileID: 11500000, guid: 2224de0807e77334f8506f9defecedd8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerController
+  currentState: 0
+--- !u!114 &1842839053
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1842839048}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bb594b790b52d5643966d3feaad1965d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
+  moveUpSpeed: 5
+  moveDownSpeed: 5
+  minY: -4
+  maxY: 4
+--- !u!114 &1842839054
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1842839048}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8c81a0d089a95f43b67f87e2bf38bf0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerInput
 --- !u!1660057539 &9223372036854775807

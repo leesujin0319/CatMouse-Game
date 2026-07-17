@@ -1,6 +1,5 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody2D))]
 public sealed class PlayerMovement : MonoBehaviour
 {
     [Header("이동 속도")]
@@ -23,9 +22,7 @@ public sealed class PlayerMovement : MonoBehaviour
 
     private Rigidbody2D rigidbody2D;
 
-    // 1: 위, -1: 아래, 0: 정지
     private float verticalDirection;
-
     private float fixedXPosition;
 
     private void Awake()
