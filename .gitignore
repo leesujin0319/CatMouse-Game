@@ -87,3 +87,12 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /CatMouse Game Project/[Aa]ssets/[Ss]treamingAssets/aa.meta
 /CatMouse Game Project/[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# Unity generated folders at repository root
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/[Bb]uild/
+/[Bb]uilds/
