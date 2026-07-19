@@ -361,6 +361,7 @@ GameObject:
   - component: {fileID: 1842839054}
   - component: {fileID: 1842839053}
   - component: {fileID: 1842839052}
+  - component: {fileID: 1842839055}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -488,6 +489,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8c81a0d089a95f43b67f87e2bf38bf0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerInput
+--- !u!114 &1842839055
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1842839048}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b288b8bbe1164e4d8ea8bbab12e95dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Player
+  <animationData>k__BackingField:
+    MoveParameterName: Move
+    RunParameterName: Run
+    BaseAttackParameterName: BaseAttack
+    FindingParameterName: Finding
+    HitParameterName: Hit
+  AttackWeight: 1
+  DefenseWeight: 1
+  HealthWeight: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -3,18 +3,11 @@ using System;
 public abstract class PlayerBaseState : IState
 {
 
-    protected PlayerController Player { get; }
-    protected StateMachine StateMachine { get; }
+    protected PlayerStateMachine stateMachine;
 
-    protected PlayerBaseState(
-        PlayerController player,
-        StateMachine stateMachine)
+    public PlayerBaseState(PlayerStateMachine stateMachine)
     {
-        Player = player
-            ?? throw new ArgumentNullException(nameof(player));
-
-        StateMachine = stateMachine
-            ?? throw new ArgumentNullException(nameof(stateMachine));
+        this.stateMachine = stateMachine;
     }
 
     public virtual void Enter()
@@ -40,5 +33,15 @@ public abstract class PlayerBaseState : IState
     public virtual void HandleInput()
     {
 
+    }
+
+     protected void StartAnimation(int animatorHash)
+    {
+        stateMachine.player.animator.SetBool(animatorHash, true);
+    }
+
+    protected void StopAnimation(int animatorHash)
+    {
+        stateMachine.player.animator.SetBool(animatorHash, false);
     }
 }
