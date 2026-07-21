@@ -4,9 +4,8 @@
 # ProjectSettings, and shared docs in the graph. Exclude only generated output,
 # editor-local state, builds, and validation captures.
 
-# Graphify's own derived output and private working material.
+# Graphify's own derived output and Codex-local settings.
 /graphify-out/
-/docs-local/
 /.codex/
 /.agents/
 

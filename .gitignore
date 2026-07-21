@@ -79,9 +79,6 @@ crashlytics-build.properties
 /graphify-out/
 /.graphify_*.json
 
-# Personal drafts, working notes, and AI scratch documents stay local.
-/docs-local/
-
 # Packed Addressables
 /CatMouse Game Project/[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/*/*.bin*
 
