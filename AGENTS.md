@@ -87,7 +87,7 @@ CatMouse Game Project/  Unity 프로젝트 루트
 - 에셋을 이동하거나 이름을 바꿀 때는 대응하는 `.meta` 파일을 함께 유지합니다.
 - `Library/PackageCache`는 수정하지 않습니다. 패키지 변경 시 `Packages/manifest.json`과 `Packages/packages-lock.json`을 함께 검토합니다.
 - `ProjectSettings/`의 자동 변경은 빌드·입력·렌더링 영향을 확인하고 의도한 파일만 반영합니다.
-- Unity C#은 `docs/technical-foundation/code-conventions-v0.1.md`와 `docs/technical-foundation/mvp-architecture-v0.1.md`를 따르며, 플레이 검증은 실제 Unity 프로젝트에서 수행합니다.
+- Unity C#은 `docs/graphify-excluded/technical-foundation/code-conventions-v0.1.md`와 `docs/graphify-excluded/technical-foundation/mvp-architecture-v0.1.md`를 따르며, 플레이 검증은 실제 Unity 프로젝트에서 수행합니다.
 
 ## Git과 외부 자료
 

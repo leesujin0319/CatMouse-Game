@@ -241,7 +241,7 @@ AI 활용은 나중의 기술 문서에서 재현 가능하게 설명한다. 게
 ### 확정
 
 1. 아트 방향과 첫 번째 맵은 **동화풍 식료품 저장실**로 고정한다.
-2. 기술 구현 기준은 [`technical-foundation/mvp-architecture-v0.1.md`](technical-foundation/mvp-architecture-v0.1.md)를 따른다.
+2. 기술 구현 기준은 [`graphify-excluded/technical-foundation/mvp-architecture-v0.1.md`](graphify-excluded/technical-foundation/mvp-architecture-v0.1.md)를 따른다.
 
 ### 후속 결정
 

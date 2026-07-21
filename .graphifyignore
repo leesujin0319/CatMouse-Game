@@ -9,6 +9,9 @@
 /.codex/
 /.agents/
 
+# Shared source documents excluded from the local knowledge graph corpus.
+/docs/graphify-excluded/
+
 # Unity Editor generated caches and local state.
 /CatMouse Game Project/.utmp/
 /CatMouse Game Project/[Ll]ibrary/
