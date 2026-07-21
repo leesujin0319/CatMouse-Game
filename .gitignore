@@ -27,6 +27,7 @@
 
 # Keep the repo-level Visual Studio workload manifest; ignore per-user IDE state.
 !.vsconfig
+/CatMouse Game Project/.vsconfig
 
 # Local JetBrains and VS Code state. Keep only reusable workspace settings.
 .idea/
@@ -87,3 +88,10 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /CatMouse Game Project/[Aa]ssets/[Ss]treamingAssets/aa.meta
 /CatMouse Game Project/[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# Local visual-validation captures are reproducible from the development scene.
+/CatMouse Game Project/Assets/_Project/Art/Validation/
+
+# Unity MCP screenshot captures are verification artifacts, not game assets.
+/CatMouse Game Project/Assets/Screenshots/
+/CatMouse Game Project/Assets/Screenshots.meta

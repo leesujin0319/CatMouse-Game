@@ -1,0 +1,68 @@
+# CatMouse Game Project - Graphify scan exclusions
+#
+# Keep authored game code, scenes, prefabs, ScriptableObject data, Packages,
+# ProjectSettings, and shared docs in the graph. Exclude only generated output,
+# editor-local state, builds, and validation captures.
+
+# Graphify's own derived output and private working material.
+/graphify-out/
+/docs-local/
+/.codex/
+/.agents/
+
+# Unity Editor generated caches and local state.
+/CatMouse Game Project/.utmp/
+/CatMouse Game Project/[Ll]ibrary/
+/CatMouse Game Project/[Tt]emp/
+/CatMouse Game Project/[Oo]bj/
+/CatMouse Game Project/[Ll]ogs/
+/CatMouse Game Project/[Uu]ser[Ss]ettings/
+/CatMouse Game Project/[Mm]emoryCaptures/
+/CatMouse Game Project/[Rr]ecordings/
+
+# Local and distributable build output. Build source settings remain included.
+/CatMouse Game Project/[Bb]uild/
+/CatMouse Game Project/[Bb]uilds/
+*.apk
+*.aab
+*.app
+*.unitypackage
+*.unitypackage.meta
+
+# Unity import metadata and IDE-generated project state do not describe gameplay.
+*.meta
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+*.log
+sysinfo.txt
+crashlytics-build.properties
+
+# Per-user IDE state and generated Android/Addressables output.
+/.vs/
+/.idea/
+/.vscode/
+/.gradle/
+/ExportedObj/
+/.consulo/
+/CatMouse Game Project/Assets/Plugins/Editor/JetBrains*
+/CatMouse Game Project/Assets/AddressableAssetsData/*/*.bin*
+/CatMouse Game Project/Assets/StreamingAssets/aa.meta
+/CatMouse Game Project/Assets/StreamingAssets/aa/
+/CatMouse Game Project/ProjectSettings/SceneTemplateSettings.json
+
+# Reproducible visual-verification captures; these are not game assets.
+/CatMouse Game Project/Assets/_Project/Art/Validation/
+/CatMouse Game Project/Assets/Screenshots/
+/CatMouse Game Project/Assets/Screenshots.meta
