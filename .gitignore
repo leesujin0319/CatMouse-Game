@@ -95,3 +95,7 @@ crashlytics-build.properties
 # Unity MCP screenshot captures are verification artifacts, not game assets.
 /CatMouse Game Project/Assets/Screenshots/
 /CatMouse Game Project/Assets/Screenshots.meta
+
+# Do not keep Graphify output or IDE solution files inside the Unity project.
+/CatMouse Game Project/graphify-out/
+*.slnx
