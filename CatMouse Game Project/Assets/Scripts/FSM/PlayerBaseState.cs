@@ -1,5 +1,3 @@
-using System;
-
 public abstract class PlayerBaseState : IState
 {
 
@@ -37,11 +35,21 @@ public abstract class PlayerBaseState : IState
 
      protected void StartAnimation(int animatorHash)
     {
+        if (stateMachine.player.animator == null)
+        {
+            return;
+        }
+
         stateMachine.player.animator.SetBool(animatorHash, true);
     }
 
     protected void StopAnimation(int animatorHash)
     {
+        if (stateMachine.player.animator == null)
+        {
+            return;
+        }
+
         stateMachine.player.animator.SetBool(animatorHash, false);
     }
 }

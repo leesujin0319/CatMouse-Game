@@ -4,7 +4,7 @@ public class PlayerHitState : PlayerBaseState
 {
     private float hitStateDuration = 0.3f;
     private float timer;
-    
+
     public PlayerHitState(PlayerStateMachine stateMachine) : base(stateMachine)
     {
     }
@@ -29,5 +29,10 @@ public class PlayerHitState : PlayerBaseState
         {
             stateMachine.ChangeState(stateMachine.playerMoveState);
         }
+    }
+
+    public override void PhysicsUpdate()
+    {
+        stateMachine.player.StopMovement();
     }
 }

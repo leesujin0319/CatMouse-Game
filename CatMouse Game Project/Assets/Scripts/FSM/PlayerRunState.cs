@@ -20,6 +20,26 @@ public class PlayerRunState : PlayerBaseState
 
     public override void Update()
     {
-        
+        StopAnimation(stateMachine.player.animationData.MoveParameterHash);
+    }
+
+    public override void HandleInput()
+    {
+        // 수정: Run 효과가 끝나면 자동으로 Move 상태로 복귀시킵니다.
+        if (!stateMachine.player.IsRunEffectActive)
+        {
+            stateMachine.ChangeState(stateMachine.playerMoveState);
+        }
+    }
+
+    public override void PhysicsUpdate()
+    {
+        if (stateMachine.player.HasMovementInput)
+        {
+            stateMachine.player.Move(stateMachine.player.RunSpeed);
+            return;
+        }
+
+        stateMachine.player.StopMovement();
     }
 }
