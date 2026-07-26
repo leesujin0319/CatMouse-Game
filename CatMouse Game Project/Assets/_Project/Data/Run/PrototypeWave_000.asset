@@ -16,6 +16,8 @@ MonoBehaviour:
   _cooldownDistanceMeters: 35
   _maximumConcurrentEnemies: 3
   _enemyCount: 1
+  _enemyArchetypes:
+  - {fileID: 11400000, guid: 18794c37ef230ba4183fdd53f30ee9de, type: 2}
   _verticalOffsets:
   - 0
   _horizontalSpacing: 0.75

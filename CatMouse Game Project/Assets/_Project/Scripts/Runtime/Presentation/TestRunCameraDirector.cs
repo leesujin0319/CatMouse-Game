@@ -1,4 +1,5 @@
 using CatMouse.Game.Player;
+using CatMouse.Game.Run;
 using UnityEngine;
 
 namespace CatMouse.Game.Presentation
@@ -10,12 +11,14 @@ namespace CatMouse.Game.Presentation
         private const float DefaultVerticalFollowSpeed = 8f;
         private const float DefaultUpperFollowOffset = 1.4f;
         private const float DefaultLowerFollowOffset = 1.8f;
-        private const float DefaultMinimumCameraY = -1.6f;
-        private const float DefaultMaximumCameraY = 0.35f;
+        private const float DefaultMinimumCameraY = 0.5f;
+        private const float DefaultMaximumCameraY = 1.5f;
 
         [Header("References")]
         [SerializeField] private TestRunnerController _runner;
         [SerializeField] private Transform _cameraTarget;
+        [SerializeField] private RunVerticalBounds _verticalBounds;
+        [SerializeField] private Camera _worldCamera;
 
         [Header("Framing")]
         [SerializeField] private float _forwardOffset = DefaultForwardOffset;
@@ -25,10 +28,16 @@ namespace CatMouse.Game.Presentation
         [SerializeField] private float _minimumCameraY = DefaultMinimumCameraY;
         [SerializeField] private float _maximumCameraY = DefaultMaximumCameraY;
 
-        public void Initialize(TestRunnerController runner, Transform cameraTarget)
+        public void Initialize(
+            TestRunnerController runner,
+            Transform cameraTarget,
+            RunVerticalBounds verticalBounds,
+            Camera worldCamera)
         {
             _runner = runner;
             _cameraTarget = cameraTarget;
+            _verticalBounds = verticalBounds;
+            _worldCamera = worldCamera;
             SnapToRunner();
         }
 
@@ -75,7 +84,7 @@ namespace CatMouse.Game.Presentation
             }
 
             var runnerPosition = _runner.transform.position;
-            var targetY = Mathf.Clamp(_cameraTarget.position.y, _minimumCameraY, _maximumCameraY);
+            var targetY = ClampCameraY(_cameraTarget.position.y);
             _cameraTarget.position = new Vector3(runnerPosition.x + _forwardOffset, targetY, _cameraTarget.position.z);
         }
 
@@ -94,7 +103,22 @@ namespace CatMouse.Game.Presentation
                 targetY = runnerY + _lowerFollowOffset;
             }
 
-            return Mathf.Clamp(targetY, _minimumCameraY, _maximumCameraY);
+            return ClampCameraY(targetY);
+        }
+
+        private float ClampCameraY(float targetY)
+        {
+            var minimumY = _minimumCameraY;
+            var maximumY = _maximumCameraY;
+
+            if (_verticalBounds != null &&
+                _verticalBounds.TryGetCameraRange(_worldCamera, out var floorMinimumY, out var floorMaximumY))
+            {
+                minimumY = floorMinimumY;
+                maximumY = floorMaximumY;
+            }
+
+            return Mathf.Clamp(targetY, minimumY, maximumY);
         }
     }
 }

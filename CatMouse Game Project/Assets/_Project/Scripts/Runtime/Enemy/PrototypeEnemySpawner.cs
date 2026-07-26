@@ -11,14 +11,16 @@ namespace CatMouse.Game.Enemy
         private const float DefaultDespawnLeftPadding = 1.25f;
         private const float DefaultMinimumSpawnY = -3.1f;
         private const float DefaultMaximumSpawnY = 1.55f;
-        private const int DefaultPoolCapacity = 6;
+        private const float EnemyHitHeightOffset = 0.35f;
+        private const int DefaultPoolCapacity = 12;
 
         [Header("References")]
         [SerializeField] private TestRunnerController _runner;
         [SerializeField] private Camera _worldCamera;
         [SerializeField] private Transform _enemyRoot;
         [SerializeField] private PrototypeEnemyMover _enemyTemplate;
-        [SerializeField] private SpawnPatternDefinition[] _patterns;
+        [SerializeField] private PrototypeCheeseDropPool _cheeseDropPool;
+        [SerializeField] private InfiniteSpawnScheduleDefinition _spawnSchedule;
 
         [Header("Spawn Area")]
         [SerializeField, Min(0f)] private float _spawnRightPadding = DefaultSpawnRightPadding;
@@ -33,6 +35,11 @@ namespace CatMouse.Game.Enemy
         private void Awake()
         {
             WarmPool();
+
+            if (_cheeseDropPool != null && _runner != null)
+            {
+                _cheeseDropPool.SetCollector(_runner.transform);
+            }
         }
 
         private void Update()
@@ -58,6 +65,67 @@ namespace CatMouse.Game.Enemy
             }
         }
 
+        private void OnDestroy()
+        {
+            for (var index = 0; index < _pool.Count; index++)
+            {
+                var enemy = _pool[index];
+                if (enemy != null)
+                {
+                    enemy.Defeated -= HandleEnemyDefeated;
+                }
+            }
+        }
+
+        public bool TryDamageFirstEnemyInSegment(
+            Vector3 segmentStart,
+            Vector3 segmentEnd,
+            float hitRadius,
+            int damage,
+            Vector2 hitDirection)
+        {
+            var segment = (Vector2)(segmentEnd - segmentStart);
+            var segmentSqrLength = segment.sqrMagnitude;
+            if (segmentSqrLength <= Mathf.Epsilon)
+            {
+                return false;
+            }
+
+            PrototypeEnemyMover firstEnemy = null;
+            var firstProgress = float.PositiveInfinity;
+            var hitRadiusSqr = Mathf.Max(0f, hitRadius) * Mathf.Max(0f, hitRadius);
+
+            for (var index = 0; index < _pool.Count; index++)
+            {
+                var enemy = _pool[index];
+                if (enemy == null || enemy.IsAvailable)
+                {
+                    continue;
+                }
+
+                var enemyPosition = (Vector2)enemy.transform.position
+                    + (Vector2.up * EnemyHitHeightOffset);
+                var fromStart = enemyPosition - (Vector2)segmentStart;
+                var progress = Mathf.Clamp01(Vector2.Dot(fromStart, segment) / segmentSqrLength);
+                var closestPoint = (Vector2)segmentStart + (segment * progress);
+
+                if ((enemyPosition - closestPoint).sqrMagnitude <= hitRadiusSqr
+                    && progress < firstProgress)
+                {
+                    firstProgress = progress;
+                    firstEnemy = enemy;
+                }
+            }
+
+            if (firstEnemy == null)
+            {
+                return false;
+            }
+
+            firstEnemy.TryTakeDamage(damage, hitDirection);
+            return true;
+        }
+
         private void WarmPool()
         {
             if (_enemyTemplate == null || _enemyRoot == null)
@@ -66,14 +134,28 @@ namespace CatMouse.Game.Enemy
             }
 
             _enemyTemplate.gameObject.SetActive(false);
-            _pool.Add(_enemyTemplate);
+            RegisterEnemy(_enemyTemplate);
 
             for (var index = 1; index < _poolCapacity; index++)
             {
                 var enemy = Instantiate(_enemyTemplate, _enemyRoot);
                 enemy.name = $"PrototypeEnemy_{index:00}";
                 enemy.gameObject.SetActive(false);
-                _pool.Add(enemy);
+                RegisterEnemy(enemy);
+            }
+        }
+
+        private void RegisterEnemy(PrototypeEnemyMover enemy)
+        {
+            enemy.Defeated += HandleEnemyDefeated;
+            _pool.Add(enemy);
+        }
+
+        private void HandleEnemyDefeated(Vector3 position, Vector2 hitDirection)
+        {
+            if (_cheeseDropPool != null)
+            {
+                _cheeseDropPool.Scatter(position, -hitDirection);
             }
         }
 
@@ -99,42 +181,40 @@ namespace CatMouse.Game.Enemy
                 return;
             }
 
-            var pattern = SelectPattern(currentDistance);
-            if (pattern == null || CountActiveEnemies() >= pattern.MaximumConcurrentEnemies)
+            if (!_spawnSchedule.TryResolve(
+                    currentDistance,
+                    out var pattern,
+                    out var difficultyCycle))
             {
                 return;
             }
 
-            SpawnPattern(pattern);
-            _nextWaveDistanceMeters = currentDistance + pattern.CooldownDistanceMeters;
-        }
-
-        private SpawnPatternDefinition SelectPattern(float currentDistance)
-        {
-            if (_patterns == null)
+            var availableEnemyCount =
+                _spawnSchedule.GetMaximumConcurrentEnemies(pattern, difficultyCycle) -
+                CountActiveEnemies();
+            if (availableEnemyCount <= 0)
             {
-                return null;
+                return;
             }
 
-            SpawnPatternDefinition selectedPattern = null;
-
-            for (var index = 0; index < _patterns.Length; index++)
-            {
-                var pattern = _patterns[index];
-                if (pattern != null && pattern.MinimumDistanceMeters <= currentDistance)
-                {
-                    selectedPattern = pattern;
-                }
-            }
-
-            return selectedPattern;
+            SpawnPattern(
+                pattern,
+                _spawnSchedule.GetEnemySpeed(pattern, difficultyCycle),
+                availableEnemyCount);
+            _nextWaveDistanceMeters =
+                currentDistance +
+                _spawnSchedule.GetCooldownDistance(pattern, difficultyCycle);
         }
 
-        private void SpawnPattern(SpawnPatternDefinition pattern)
+        private void SpawnPattern(
+            SpawnPatternDefinition pattern,
+            float enemySpeed,
+            int maximumSpawnCount)
         {
             var firstSpawnX = _worldCamera.transform.position.x + GetHalfViewWidth() + _spawnRightPadding;
+            var spawnCount = Mathf.Min(pattern.EnemyCount, maximumSpawnCount);
 
-            for (var index = 0; index < pattern.EnemyCount; index++)
+            for (var index = 0; index < spawnCount; index++)
             {
                 var enemy = GetAvailableEnemy();
                 if (enemy == null)
@@ -146,7 +226,10 @@ namespace CatMouse.Game.Enemy
                     firstSpawnX + (index * pattern.HorizontalSpacing),
                     Mathf.Clamp(pattern.GetVerticalOffset(index), _minimumSpawnY, _maximumSpawnY),
                     0f);
-                enemy.Spawn(spawnPosition, pattern.EnemySpeed);
+                enemy.Spawn(
+                    spawnPosition,
+                    enemySpeed,
+                    pattern.GetEnemyArchetype(index));
             }
         }
 
@@ -191,6 +274,7 @@ namespace CatMouse.Game.Enemy
                 && _worldCamera != null
                 && _enemyRoot != null
                 && _enemyTemplate != null
+                && _spawnSchedule != null
                 && _pool.Count > 0;
         }
     }

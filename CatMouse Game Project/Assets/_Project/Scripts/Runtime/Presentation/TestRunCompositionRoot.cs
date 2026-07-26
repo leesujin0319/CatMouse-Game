@@ -1,4 +1,5 @@
 using CatMouse.Game.Player;
+using CatMouse.Game.Run;
 using CatMouse.Game.UI;
 using UnityEngine;
 
@@ -9,8 +10,8 @@ namespace CatMouse.Game.Presentation
     {
         private const float ForwardSpeed = 3.5f;
         private const float VerticalSpeed = 5f;
-        private const float MinimumPlayerY = -3.4f;
-        private const float MaximumPlayerY = 1.75f;
+        private const float MinimumPlayerY = -3.5f;
+        private const float MaximumPlayerY = 2.5f;
         private const float MetersPerWorldUnit = 10f;
 
         [SerializeField] private TestRunnerController _runner;
@@ -18,6 +19,8 @@ namespace CatMouse.Game.Presentation
         [SerializeField] private Transform _cameraTarget;
         [SerializeField] private Transform _scrollDriver;
         [SerializeField] private TestRunCameraDirector _cameraDirector;
+        [SerializeField] private RunVerticalBounds _verticalBounds;
+        [SerializeField] private Camera _worldCamera;
 
         public void Initialize(
             TestRunnerController runner,
@@ -37,12 +40,13 @@ namespace CatMouse.Game.Presentation
                 VerticalSpeed,
                 MinimumPlayerY,
                 MaximumPlayerY,
-                MetersPerWorldUnit);
+                MetersPerWorldUnit,
+                _verticalBounds);
 
             _cameraTarget.SetParent(transform, true);
             _scrollDriver.SetParent(_runner.transform, false);
             _scrollDriver.localPosition = Vector3.zero;
-            _cameraDirector.Initialize(_runner, _cameraTarget);
+            _cameraDirector.Initialize(_runner, _cameraTarget, _verticalBounds, _worldCamera);
 
             _runner.DistanceChanged += HandleDistanceChanged;
             _distanceHud.SetDistance(_runner.DistanceMeters);
@@ -60,7 +64,10 @@ namespace CatMouse.Game.Presentation
                 VerticalSpeed,
                 MinimumPlayerY,
                 MaximumPlayerY,
-                MetersPerWorldUnit);
+                MetersPerWorldUnit,
+                _verticalBounds);
+
+            _cameraDirector.Initialize(_runner, _cameraTarget, _verticalBounds, _worldCamera);
 
             _runner.DistanceChanged += HandleDistanceChanged;
             _distanceHud.SetDistance(_runner.DistanceMeters);

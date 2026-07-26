@@ -12,6 +12,7 @@ namespace CatMouse.Game.Enemy
 
         [Header("Formation")]
         [SerializeField, Min(1)] private int _enemyCount = 1;
+        [SerializeField] private EnemyArchetypeDefinition[] _enemyArchetypes;
         [SerializeField] private float[] _verticalOffsets = { 0f };
         [SerializeField, Min(0f)] private float _horizontalSpacing = 0.75f;
 
@@ -33,6 +34,16 @@ namespace CatMouse.Game.Enemy
             }
 
             return _verticalOffsets[index % _verticalOffsets.Length];
+        }
+
+        public EnemyArchetypeDefinition GetEnemyArchetype(int index)
+        {
+            if (_enemyArchetypes == null || _enemyArchetypes.Length == 0)
+            {
+                return null;
+            }
+
+            return _enemyArchetypes[index % _enemyArchetypes.Length];
         }
 
         private void OnValidate()
