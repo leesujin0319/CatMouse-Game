@@ -1,4 +1,5 @@
 using System;
+using CatMouse.Game.Presentation;
 using UnityEngine;
 
 namespace CatMouse.Game.Enemy
@@ -54,6 +55,7 @@ namespace CatMouse.Game.Enemy
                 ? visualScale / sourceVisualHeight
                 : visualScale;
             transform.localScale = _baseLocalScale * normalizedVisualScale;
+            GetComponent<CharacterSpriteCollider2D>()?.Refresh();
         }
 
         public bool TryTakeDamage(int damage, Vector2 hitDirection)

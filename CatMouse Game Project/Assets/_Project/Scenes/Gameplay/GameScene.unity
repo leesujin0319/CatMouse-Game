@@ -1191,7 +1191,6 @@ GameObject:
   m_Component:
   - component: {fileID: 225919255}
   - component: {fileID: 225919257}
-  - component: {fileID: 225919256}
   m_Layer: 0
   m_Name: Visual
   m_TagString: Untagged
@@ -1214,21 +1213,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1760911665}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &225919256
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 225919254}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8559d72ed52615e4b86c9070509be2db, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.Presentation.PrototypeTransformMotion
-  _verticalAmplitude: 0.025
-  _rotationAmplitudeDegrees: 1.25
-  _cyclesPerSecond: 2.8
 --- !u!212 &225919257
 SpriteRenderer:
   serializedVersion: 2
@@ -4194,11 +4178,11 @@ RectTransform:
   - {fileID: 1638810423}
   m_Father: {fileID: 665167419}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 1}
-  m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0, y: -42}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 24, y: -24}
   m_SizeDelta: {x: 264, y: 62}
-  m_Pivot: {x: 0.5, y: 1}
+  m_Pivot: {x: 0, y: 1}
 --- !u!114 &1119919921
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6613,6 +6597,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1760911665}
   - component: {fileID: 1760911663}
+  - component: {fileID: 1760911668}
+  - component: {fileID: 1760911667}
+  - component: {fileID: 1760911666}
   m_Layer: 0
   m_Name: PrototypeEnemyTemplate
   m_TagString: Untagged
@@ -6651,6 +6638,75 @@ Transform:
   - {fileID: 225919255}
   m_Father: {fileID: 1178790712}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1760911666
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1760911662}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ff2a326b0407c34f9963e4263279351, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.Presentation.YAxisSortingOrder
+  _renderers:
+  - {fileID: 225919257}
+  _sortingOrderOffset: 1000
+  _ordersPerUnit: 100
+--- !u!114 &1760911667
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1760911662}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 289bc8769d040fb41a64825869bdbdfc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.Presentation.CharacterSpriteCollider2D
+  _spriteRenderer: {fileID: 225919257}
+  _collider: {fileID: 1760911668}
+  _widthRatio: 0.55
+  _heightRatio: 0.72
+--- !u!70 &1760911668
+CapsuleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1760911662}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0.31284}
+  m_Size: {x: 0.59015, y: 0.62568}
+  m_Direction: 0
 --- !u!1 &1773984661
 GameObject:
   m_ObjectHideFlags: 0
@@ -6847,6 +6903,7 @@ GameObject:
   - component: {fileID: 1821651722}
   - component: {fileID: 1821651724}
   - component: {fileID: 1821651723}
+  - component: {fileID: 1821651725}
   m_Layer: 0
   m_Name: PrototypeCheeseTemplate
   m_TagString: Untagged
@@ -7005,6 +7062,22 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 0.22
+--- !u!114 &1821651725
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1821651719}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ff2a326b0407c34f9963e4263279351, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.Presentation.YAxisSortingOrder
+  _renderers:
+  - {fileID: 1821651722}
+  _sortingOrderOffset: 990
+  _ordersPerUnit: 100
 --- !u!1 &1827455018
 GameObject:
   m_ObjectHideFlags: 0
@@ -7114,6 +7187,9 @@ GameObject:
   - component: {fileID: 1842839059}
   - component: {fileID: 1842839060}
   - component: {fileID: 1842839061}
+  - component: {fileID: 1842839064}
+  - component: {fileID: 1842839063}
+  - component: {fileID: 1842839062}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -7337,6 +7413,75 @@ MonoBehaviour:
   _centerViewportX: 0.5
   _baseForwardSpeed: 3.5
   _forwardSpeedForCenter: 7
+--- !u!114 &1842839062
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1842839048}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ff2a326b0407c34f9963e4263279351, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.Presentation.YAxisSortingOrder
+  _renderers:
+  - {fileID: 1618809313}
+  _sortingOrderOffset: 1000
+  _ordersPerUnit: 100
+--- !u!114 &1842839063
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1842839048}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 289bc8769d040fb41a64825869bdbdfc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.Presentation.CharacterSpriteCollider2D
+  _spriteRenderer: {fileID: 1618809313}
+  _collider: {fileID: 1842839064}
+  _widthRatio: 0.55
+  _heightRatio: 0.72
+--- !u!70 &1842839064
+CapsuleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1842839048}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0.00000011920929, y: 0.2556}
+  m_Size: {x: 0.5494499, y: 0.5112}
+  m_Direction: 0
 --- !u!1 &1842911342
 GameObject:
   m_ObjectHideFlags: 0
@@ -7889,6 +8034,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.Enemy.PrototypeCheeseDropPool
   _worldCamera: {fileID: 1050526394}
   _verticalBounds: {fileID: 595604763}
+  _runProgress: {fileID: 2019089263}
   _cheeseRoot: {fileID: 1321887850}
   _cheeseTemplate: {fileID: 1821651720}
   _poolCapacity: 24

@@ -21,6 +21,7 @@ namespace CatMouse.Game.Enemy
         [Header("References")]
         [SerializeField] private Camera _worldCamera;
         [SerializeField] private RunVerticalBounds _verticalBounds;
+        [SerializeField] private RunProgressController _runProgress;
         [SerializeField] private Transform _cheeseRoot;
         [SerializeField] private PrototypeCheeseDrop _cheeseTemplate;
         private Transform _collector;
@@ -93,6 +94,11 @@ namespace CatMouse.Game.Enemy
             _collector = collector;
         }
 
+        public void SetRunProgress(RunProgressController runProgress)
+        {
+            _runProgress = runProgress;
+        }
+
         private void OnValidate()
         {
             _poolCapacity = Mathf.Max(1, _poolCapacity);
@@ -135,13 +141,21 @@ namespace CatMouse.Game.Enemy
             var leftBoundary = _worldCamera.transform.position.x
                 - (_worldCamera.orthographicSize * _worldCamera.aspect)
                 - _despawnLeftPadding;
+            var worldScrollSpeed = _runProgress != null
+                ? _runProgress.CurrentForwardSpeed
+                : 0f;
 
             for (var index = 0; index < _pool.Count; index++)
             {
                 var cheese = _pool[index];
                 if (cheese != null && !cheese.IsAvailable)
                 {
-                    cheese.Tick(Time.deltaTime, minimumY, maximumY, leftBoundary);
+                    cheese.Tick(
+                        Time.deltaTime,
+                        minimumY,
+                        maximumY,
+                        leftBoundary,
+                        worldScrollSpeed);
 
                     if (_collector != null)
                     {

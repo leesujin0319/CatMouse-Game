@@ -129,12 +129,12 @@ TextureImporter:
       name: PlayerMouse_v1_0
       rect:
         serializedVersion: 2
-        x: 123
-        y: 309
+        x: 0
+        y: 0
         width: 999
         height: 710
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 9
+      pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData:
       outline: []

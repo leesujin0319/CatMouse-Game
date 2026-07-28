@@ -89,9 +89,8 @@ crashlytics-build.properties
 # Local visual-validation captures are reproducible from the development scene.
 /CatMouse Game Project/Assets/_Project/Art/Validation/
 
-# Unity MCP screenshot captures are verification artifacts, not game assets.
-/CatMouse Game Project/Assets/Screenshots/
-/CatMouse Game Project/Assets/Screenshots.meta
+# Local Unity validation captures stay outside the Unity project and are not shared.
+/local-screenshots/
 
 # Do not keep Graphify output or IDE solution files inside the Unity project.
 /CatMouse Game Project/graphify-out/

@@ -21,6 +21,7 @@ namespace CatMouse.Game.Run
         public event Action<float> DistanceChanged;
 
         public float DistanceMeters { get; private set; }
+        public float CurrentForwardSpeed => GetForwardSpeed();
 
         private void Start()
         {
