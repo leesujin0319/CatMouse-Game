@@ -89,6 +89,14 @@ CatMouse Game Project/  Unity 프로젝트 루트
 - `ProjectSettings/`의 자동 변경은 빌드·입력·렌더링 영향을 확인하고 의도한 파일만 반영합니다.
 - Unity C#은 `docs/graphify-excluded/technical-foundation/code-conventions-v0.1.md`와 `docs/graphify-excluded/technical-foundation/mvp-architecture-v0.1.md`를 따르며, 플레이 검증은 실제 Unity 프로젝트에서 수행합니다.
 
+## Unity 자동화
+
+- 상세 기준은 `docs/conventions/unity-automation-tools.md`를 따릅니다.
+- 빠르고 결과가 명확한 상태·콘솔·플레이·테스트·새로고침·스크린샷·프로파일러·리시리얼라이즈 작업은 `unity-cli`를 우선합니다.
+- 구조화된 씬 탐색과 GameObject·컴포넌트·Prefab·UI·카메라·패키지 조작, 반복적인 시각 검증은 Unity MCP를 사용합니다.
+- 일반 소스와 문서는 로컬 파일 도구로 최소 변경하고 Unity 반영과 검증에 CLI 또는 MCP를 사용합니다.
+- CLI와 MCP로 같은 대상을 동시에 변경하지 않으며, 도구 전환 전 컴파일·저장·도메인 리로드 완료를 확인합니다.
+
 ## Git과 외부 자료
 
 - `Assets/`, `Packages/`, `ProjectSettings/`와 관련 `.meta`는 포함하고, Unity 캐시·로그·빌드 산출물·개인 설정은 `.gitignore`로 제외합니다.

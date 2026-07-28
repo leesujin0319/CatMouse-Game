@@ -23,3 +23,10 @@
 ## 협업 컨벤션
 
 - [`conventions/commit-convention.md`](conventions/commit-convention.md): 한국어 중심 커밋 메시지, 커밋 분리, 사전 검증 규칙
+- [`conventions/unity-automation-tools.md`](conventions/unity-automation-tools.md): Unity CLI·MCP 역할 구분, 작업 절차와 도구 전환 규칙
+
+## 게임 제작 기준
+
+- [`gameplay-size-standard-v0.1.md`](gameplay-size-standard-v0.1.md): 맵·카메라·캐릭터·적·투사체·드롭 아이템의 월드 유닛 크기 기준
+- [`asset-production/endless-background-asset-rules.md`](asset-production/endless-background-asset-rules.md): 원경·바닥·근경 수평 심리스 에셋 제작 규칙
+- [`asset-production/ai-generated-character-assets.md`](asset-production/ai-generated-character-assets.md): AI 생성 캐릭터 에셋 제작·임포트 규칙
