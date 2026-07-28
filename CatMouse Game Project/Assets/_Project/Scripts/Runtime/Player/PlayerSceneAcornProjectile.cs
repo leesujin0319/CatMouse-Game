@@ -1,3 +1,4 @@
+using CatMouse.Game.Enemy;
 using UnityEngine;
 
 namespace CatMouse.Game.Player
@@ -18,6 +19,8 @@ namespace CatMouse.Game.Player
 
         private PlayerSceneTestEnemy _target;
         private PlayerRunHealth _runHealth;
+        private PrototypeEnemySpawner _enemySpawner;
+        private Vector2 _direction;
         private float _speed;
         private float _remainingLifetime;
         private float _hitRadius;
@@ -44,6 +47,28 @@ namespace CatMouse.Game.Player
             gameObject.SetActive(true);
         }
 
+        public void Spawn(
+            Vector3 position,
+            PrototypeEnemySpawner enemySpawner,
+            Vector2 direction,
+            float speed,
+            int damage,
+            float lifetime,
+            float hitRadius)
+        {
+            transform.position = position;
+            _target = null;
+            _runHealth = null;
+            _enemySpawner = enemySpawner;
+            _direction = direction.sqrMagnitude > Mathf.Epsilon ? direction.normalized : Vector2.right;
+            _speed = Mathf.Max(0f, speed);
+            _damage = Mathf.Max(1, damage);
+            _remainingLifetime = Mathf.Max(0.1f, lifetime);
+            _hitRadius = Mathf.Max(0f, hitRadius);
+            transform.right = _direction;
+            gameObject.SetActive(true);
+        }
+
         public void Tick(float deltaTime)
         {
             if (IsAvailable)
@@ -52,7 +77,32 @@ namespace CatMouse.Game.Player
             }
 
             _remainingLifetime -= deltaTime;
-            if (_remainingLifetime <= 0f || _target == null || !_target.IsAlive)
+            if (_remainingLifetime <= 0f)
+            {
+                Deactivate();
+                return;
+            }
+
+            if (_enemySpawner != null)
+            {
+                Vector3 previousPosition = transform.position;
+                Vector3 nextPosition = previousPosition + (Vector3)(_direction * (_speed * deltaTime));
+                transform.position = nextPosition;
+
+                if (_enemySpawner.TryDamageFirstEnemyInSegment(
+                        previousPosition,
+                        nextPosition,
+                        _hitRadius,
+                        _damage,
+                        _direction))
+                {
+                    Deactivate();
+                }
+
+                return;
+            }
+
+            if (_target == null || !_target.IsAlive)
             {
                 Deactivate();
                 return;
@@ -86,6 +136,7 @@ namespace CatMouse.Game.Player
         {
             _target = null;
             _runHealth = null;
+            _enemySpawner = null;
             gameObject.SetActive(false);
         }
 

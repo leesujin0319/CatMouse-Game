@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using CatMouse.Game.Enemy;
 using UnityEngine;
 
 namespace CatMouse.Game.Player
@@ -14,6 +15,7 @@ namespace CatMouse.Game.Player
         [Header("References")]
         [SerializeField] private PlayerRunStats _runStats;
         [SerializeField] private PlayerRunHealth _runHealth;
+        [SerializeField] private PrototypeEnemySpawner _enemySpawner;
         [SerializeField] private Transform _projectileRoot;
         [SerializeField] private PlayerSceneAcornProjectile _projectileTemplate;
 
@@ -60,6 +62,18 @@ namespace CatMouse.Game.Player
             }
 
             TickProjectiles();
+
+            if (_enemySpawner != null)
+            {
+                _attackCooldown -= Time.deltaTime;
+                if (_attackCooldown <= 0f)
+                {
+                    FireForward();
+                }
+
+                return;
+            }
+
             UpdateTarget();
 
             _attackCooldown -= Time.deltaTime;
@@ -141,6 +155,26 @@ namespace CatMouse.Game.Player
             _attackCooldown = 1f / stats.AttacksPerSecond;
         }
 
+        private void FireForward()
+        {
+            PlayerSceneAcornProjectile projectile = GetAvailableProjectile();
+            if (projectile == null)
+            {
+                return;
+            }
+
+            PlayerStatsSnapshot stats = _runStats.Current;
+            projectile.Spawn(
+                transform.position + (Vector3)_attackOriginOffset,
+                _enemySpawner,
+                Vector2.right,
+                stats.ProjectileSpeed,
+                stats.AttackDamage,
+                _projectileLifetime,
+                DefaultHitRadius);
+            _attackCooldown = 1f / stats.AttacksPerSecond;
+        }
+
         private PlayerSceneAcornProjectile GetAvailableProjectile()
         {
             for (int index = 0; index < _projectiles.Count; index++)
@@ -210,7 +244,8 @@ namespace CatMouse.Game.Player
                 && _runHealth != null
                 && _projectileRoot != null
                 && _projectileTemplate != null
-                && _projectiles.Count > 0;
+                && _projectiles.Count > 0
+                && (_enemySpawner != null || _targetLayers.value != 0);
         }
 
         private void HandleStatsChanged(PlayerStatsSnapshot stats)

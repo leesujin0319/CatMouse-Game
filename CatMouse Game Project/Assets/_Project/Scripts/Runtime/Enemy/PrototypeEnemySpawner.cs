@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using CatMouse.Game.Player;
+using CatMouse.Game.Run;
 using UnityEngine;
 
 namespace CatMouse.Game.Enemy
@@ -16,6 +17,8 @@ namespace CatMouse.Game.Enemy
 
         [Header("References")]
         [SerializeField] private TestRunnerController _runner;
+        [SerializeField] private RunProgressController _runProgress;
+        [SerializeField] private Transform _collector;
         [SerializeField] private Camera _worldCamera;
         [SerializeField] private Transform _enemyRoot;
         [SerializeField] private PrototypeEnemyMover _enemyTemplate;
@@ -36,9 +39,14 @@ namespace CatMouse.Game.Enemy
         {
             WarmPool();
 
-            if (_cheeseDropPool != null && _runner != null)
+            Transform collector = _collector != null
+                ? _collector
+                : _runner != null
+                    ? _runner.transform
+                    : null;
+            if (_cheeseDropPool != null && collector != null)
             {
-                _cheeseDropPool.SetCollector(_runner.transform);
+                _cheeseDropPool.SetCollector(collector);
             }
         }
 
@@ -175,7 +183,9 @@ namespace CatMouse.Game.Enemy
 
         private void TrySpawnNextWave()
         {
-            var currentDistance = _runner.DistanceMeters;
+            float currentDistance = _runProgress != null
+                ? _runProgress.DistanceMeters
+                : _runner.DistanceMeters;
             if (currentDistance < _nextWaveDistanceMeters)
             {
                 return;
@@ -270,7 +280,7 @@ namespace CatMouse.Game.Enemy
 
         private bool HasValidConfiguration()
         {
-            return _runner != null
+            return (_runProgress != null || _runner != null)
                 && _worldCamera != null
                 && _enemyRoot != null
                 && _enemyTemplate != null

@@ -16,12 +16,14 @@ namespace CatMouse.Game.Presentation
 
         [Header("References")]
         [SerializeField] private TestRunnerController _runner;
+        [SerializeField] private Transform _followTarget;
         [SerializeField] private Transform _cameraTarget;
         [SerializeField] private RunVerticalBounds _verticalBounds;
         [SerializeField] private Camera _worldCamera;
 
         [Header("Framing")]
         [SerializeField] private float _forwardOffset = DefaultForwardOffset;
+        [SerializeField] private bool _followHorizontalMovement = true;
         [SerializeField, Min(0f)] private float _verticalFollowSpeed = DefaultVerticalFollowSpeed;
         [SerializeField, Min(0f)] private float _upperFollowOffset = DefaultUpperFollowOffset;
         [SerializeField, Min(0f)] private float _lowerFollowOffset = DefaultLowerFollowOffset;
@@ -35,6 +37,7 @@ namespace CatMouse.Game.Presentation
             Camera worldCamera)
         {
             _runner = runner;
+            _followTarget = runner != null ? runner.transform : null;
             _cameraTarget = cameraTarget;
             _verticalBounds = verticalBounds;
             _worldCamera = worldCamera;
@@ -48,14 +51,18 @@ namespace CatMouse.Game.Presentation
 
         private void LateUpdate()
         {
-            if (!Application.isPlaying || _runner == null || _cameraTarget == null)
+            Transform followTarget = GetFollowTarget();
+            if (!Application.isPlaying || followTarget == null || _cameraTarget == null)
             {
                 return;
             }
 
-            var runnerPosition = _runner.transform.position;
+            var runnerPosition = followTarget.position;
             var targetY = ResolveTargetY(runnerPosition.y, _cameraTarget.position.y);
-            var targetPosition = new Vector3(runnerPosition.x + _forwardOffset, targetY, _cameraTarget.position.z);
+            var targetX = _followHorizontalMovement
+                ? runnerPosition.x + _forwardOffset
+                : _cameraTarget.position.x;
+            var targetPosition = new Vector3(targetX, targetY, _cameraTarget.position.z);
             var followFactor = 1f - Mathf.Exp(-_verticalFollowSpeed * Time.deltaTime);
 
             _cameraTarget.position = new Vector3(
@@ -78,14 +85,27 @@ namespace CatMouse.Game.Presentation
 
         private void SnapToRunner()
         {
-            if (_runner == null || _cameraTarget == null)
+            Transform followTarget = GetFollowTarget();
+            if (followTarget == null || _cameraTarget == null)
             {
                 return;
             }
 
-            var runnerPosition = _runner.transform.position;
+            var runnerPosition = followTarget.position;
             var targetY = ClampCameraY(_cameraTarget.position.y);
-            _cameraTarget.position = new Vector3(runnerPosition.x + _forwardOffset, targetY, _cameraTarget.position.z);
+            var targetX = _followHorizontalMovement
+                ? runnerPosition.x + _forwardOffset
+                : _cameraTarget.position.x;
+            _cameraTarget.position = new Vector3(targetX, targetY, _cameraTarget.position.z);
+        }
+
+        private Transform GetFollowTarget()
+        {
+            return _followTarget != null
+                ? _followTarget
+                : _runner != null
+                    ? _runner.transform
+                    : null;
         }
 
         private float ResolveTargetY(float runnerY, float currentCameraY)
