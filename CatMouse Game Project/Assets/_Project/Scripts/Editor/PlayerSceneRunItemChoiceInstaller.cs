@@ -34,6 +34,7 @@ namespace CatMouse.Game.Editor
             }
 
             RunItemDefinition[] itemDefinitions = CreateItemDefinitions();
+            PlayerScreenPositionController screenPositionController = ConfigureScreenPositionController(runStats.gameObject);
             RunItemChoiceView choiceView = CreateChoiceView(hudCanvas.transform);
             Button retryButton = CreateGameOverPanel(hudCanvas.transform, out GameObject gameOverPanel);
             RunItemChoiceController controller = runStats.GetComponent<RunItemChoiceController>();
@@ -42,7 +43,7 @@ namespace CatMouse.Game.Editor
                 controller = runStats.gameObject.AddComponent<RunItemChoiceController>();
             }
 
-            ConfigureController(controller, runStats, choiceView, itemDefinitions);
+            ConfigureController(controller, runStats, choiceView, screenPositionController, itemDefinitions);
             ConfigureGameOverController(runStats.gameObject, gameOverPanel, retryButton);
             EnsureEventSystem();
             EnsurePlayerSceneIsInBuildSettings();
@@ -66,7 +67,7 @@ namespace CatMouse.Game.Editor
                 CreateOrUpdateItem("RunItem_SharpIncisor", "날카로운 앞니", "공격 속도 +20%", PlayerStatType.AttackSpeed, PlayerStatModifierOperation.Percent, 0.2f),
                 CreateOrUpdateItem("RunItem_LongTailSight", "긴 꼬리 조준기", "공격 범위 +25%", PlayerStatType.AttackRange, PlayerStatModifierOperation.Percent, 0.25f),
                 CreateOrUpdateItem("RunItem_WindWhisker", "바람 수염", "도토리 속도 +25%", PlayerStatType.ProjectileSpeed, PlayerStatModifierOperation.Percent, 0.25f),
-                CreateOrUpdateItem("RunItem_RunCheese", "달리기 치즈", "전진 속도 +15%", PlayerStatType.ForwardSpeed, PlayerStatModifierOperation.Percent, 0.15f),
+                CreateOrUpdateItem("RunItem_RunCheese", "달리기 치즈", "3초 동안 전진 속도 +15%", PlayerStatType.ForwardSpeed, PlayerStatModifierOperation.Percent, 0.15f, 3f),
                 CreateOrUpdateItem("RunItem_SpringCheese", "통통 치즈", "상하 이동 속도 +15%", PlayerStatType.VerticalSpeed, PlayerStatModifierOperation.Percent, 0.15f),
             };
         }
@@ -77,7 +78,8 @@ namespace CatMouse.Game.Editor
             string description,
             PlayerStatType statType,
             PlayerStatModifierOperation operation,
-            float value)
+            float value,
+            float temporaryDuration = 0f)
         {
             string assetPath = $"{ItemFolderPath}/{assetName}.asset";
             RunItemDefinition itemDefinition = AssetDatabase.LoadAssetAtPath<RunItemDefinition>(assetPath);
@@ -91,6 +93,7 @@ namespace CatMouse.Game.Editor
             serializedItem.FindProperty("_displayName").stringValue = displayName;
             serializedItem.FindProperty("_description").stringValue = description;
             serializedItem.FindProperty("_maximumStacks").intValue = 10;
+            serializedItem.FindProperty("_temporaryDuration").floatValue = temporaryDuration;
 
             SerializedProperty modifiers = serializedItem.FindProperty("_modifiers");
             modifiers.arraySize = 1;
@@ -183,11 +186,13 @@ namespace CatMouse.Game.Editor
             RunItemChoiceController controller,
             PlayerRunStats runStats,
             RunItemChoiceView choiceView,
+            PlayerScreenPositionController screenPositionController,
             IReadOnlyList<RunItemDefinition> itemDefinitions)
         {
             SerializedObject serializedController = new(controller);
             serializedController.FindProperty("_runStats").objectReferenceValue = runStats;
             serializedController.FindProperty("_choiceView").objectReferenceValue = choiceView;
+            serializedController.FindProperty("_screenPositionController").objectReferenceValue = screenPositionController;
             serializedController.FindProperty("_choiceInterval").floatValue = 15f;
 
             SerializedProperty itemsProperty = serializedController.FindProperty("_availableItems");
@@ -198,6 +203,39 @@ namespace CatMouse.Game.Editor
             }
 
             serializedController.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static PlayerScreenPositionController ConfigureScreenPositionController(GameObject playerObject)
+        {
+            global::Player player = playerObject.GetComponent<global::Player>();
+            PlayerRunStats runStats = playerObject.GetComponent<PlayerRunStats>();
+            Camera worldCamera = Object.FindFirstObjectByType<Camera>();
+            PlayerScreenPositionController controller = playerObject.GetComponent<PlayerScreenPositionController>();
+            if (controller == null)
+            {
+                controller = playerObject.AddComponent<PlayerScreenPositionController>();
+            }
+
+            SerializedObject serializedController = new(controller);
+            serializedController.FindProperty("_player").objectReferenceValue = player;
+            serializedController.FindProperty("_runStats").objectReferenceValue = runStats;
+            serializedController.FindProperty("_worldCamera").objectReferenceValue = worldCamera;
+            serializedController.FindProperty("_leftViewportX").floatValue = 0.25f;
+            serializedController.FindProperty("_centerViewportX").floatValue = 0.5f;
+            serializedController.FindProperty("_baseForwardSpeed").floatValue = 3.5f;
+            serializedController.FindProperty("_forwardSpeedForCenter").floatValue = 7f;
+            serializedController.ApplyModifiedPropertiesWithoutUndo();
+
+            if (player != null && worldCamera != null)
+            {
+                Vector3 position = player.transform.position;
+                float cameraDistance = Mathf.Abs(worldCamera.transform.position.z - position.z);
+                position.x = worldCamera.ViewportToWorldPoint(new Vector3(0.25f, 0.5f, cameraDistance)).x;
+                player.transform.position = position;
+            }
+
+            EditorUtility.SetDirty(controller);
+            return controller;
         }
 
         private static Button CreateGameOverPanel(Transform hudParent, out GameObject panel)

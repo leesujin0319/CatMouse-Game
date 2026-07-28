@@ -1,4 +1,5 @@
 using CatMouse.Game.Player;
+using CatMouse.Game.Run;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -16,6 +17,8 @@ public class Player : MonoBehaviour
     [SerializeField] private float minY = -4f;
     [SerializeField] private float maxY = 4f;
     [SerializeField] private PlayerRunStats runStats;
+    [SerializeField] private RunVerticalBounds verticalBounds;
+    [SerializeField, Min(0f)] private float mapEdgeInset = 0.75f;
 
     [Header("Run Effect")]
     [SerializeField] private float defaultRunDuration = 2f;
@@ -41,6 +44,7 @@ public class Player : MonoBehaviour
         animator = GetComponent<Animator>();
         animator ??= GetComponentInChildren<Animator>();
         Rigidbody2D = GetComponent<Rigidbody2D>();
+        verticalBounds ??= FindFirstObjectByType<RunVerticalBounds>();
         animationData ??= new PlayerAnimationData();
         animationData.Initialize();
         stateMachine = new PlayerStateMachine(this);
@@ -92,7 +96,7 @@ public class Player : MonoBehaviour
             * Time.fixedDeltaTime;
 
         nextPosition.x = fixedXPosition;
-        nextPosition.y = Mathf.Clamp(nextPosition.y, minY, maxY);
+        nextPosition.y = ClampVerticalPosition(nextPosition.y);
 
         Rigidbody2D.MovePosition(nextPosition);
     }
@@ -101,8 +105,22 @@ public class Player : MonoBehaviour
     {
         Vector2 currentPosition = Rigidbody2D.position;
         currentPosition.x = fixedXPosition;
-        currentPosition.y = Mathf.Clamp(currentPosition.y, minY, maxY);
+        currentPosition.y = ClampVerticalPosition(currentPosition.y);
         Rigidbody2D.MovePosition(currentPosition);
+    }
+
+    public void SetFixedHorizontalPosition(float worldX)
+    {
+        fixedXPosition = worldX;
+
+        if (Rigidbody2D == null)
+        {
+            return;
+        }
+
+        Vector2 position = Rigidbody2D.position;
+        position.x = fixedXPosition;
+        Rigidbody2D.position = position;
     }
 
     public void ActivateRunEffect(float duration = -1f)
@@ -140,6 +158,26 @@ public class Player : MonoBehaviour
             minY = maxY;
             maxY = temporaryValue;
         }
+
+        mapEdgeInset = Mathf.Max(0f, mapEdgeInset);
+    }
+
+    private float ClampVerticalPosition(float worldY)
+    {
+        if (verticalBounds == null || !verticalBounds.TryGetMovementRange(out float minimumY, out float maximumY))
+        {
+            return Mathf.Clamp(worldY, minY, maxY);
+        }
+
+        minimumY += mapEdgeInset;
+        maximumY -= mapEdgeInset;
+
+        if (minimumY > maximumY)
+        {
+            return (minimumY + maximumY) * 0.5f;
+        }
+
+        return Mathf.Clamp(worldY, minimumY, maximumY);
     }
 
     private float GetAdjustedVerticalSpeed(float fallbackSpeed)

@@ -13,6 +13,7 @@ namespace CatMouse.Game.Player
         [SerializeField] private PlayerBaseStatsDefinition _baseStatsDefinition;
 
         private readonly Dictionary<RunItemDefinition, int> _itemStacks = new();
+        private readonly Dictionary<RunItemDefinition, int> _temporaryItemStacks = new();
 
         public event Action<PlayerStatsSnapshot> StatsChanged;
 
@@ -28,6 +29,7 @@ namespace CatMouse.Game.Player
         {
             _baseStatsDefinition = baseStatsDefinition;
             _itemStacks.Clear();
+            _temporaryItemStacks.Clear();
             IsInitialized = _baseStatsDefinition != null;
 
             if (IsInitialized)
@@ -61,14 +63,47 @@ namespace CatMouse.Game.Player
                 : 0;
         }
 
+        public bool TryApplyTemporary(RunItemDefinition itemDefinition)
+        {
+            if (!IsInitialized || itemDefinition == null || !itemDefinition.IsTemporary)
+            {
+                return false;
+            }
+
+            _temporaryItemStacks.TryGetValue(itemDefinition, out int currentStacks);
+            _temporaryItemStacks[itemDefinition] = currentStacks + 1;
+            Recalculate();
+            return true;
+        }
+
+        public void RemoveTemporary(RunItemDefinition itemDefinition)
+        {
+            if (itemDefinition == null || !_temporaryItemStacks.TryGetValue(itemDefinition, out int currentStacks))
+            {
+                return;
+            }
+
+            if (currentStacks <= 1)
+            {
+                _temporaryItemStacks.Remove(itemDefinition);
+            }
+            else
+            {
+                _temporaryItemStacks[itemDefinition] = currentStacks - 1;
+            }
+
+            Recalculate();
+        }
+
         public void ResetRunItems()
         {
-            if (!IsInitialized || _itemStacks.Count == 0)
+            if (!IsInitialized || (_itemStacks.Count == 0 && _temporaryItemStacks.Count == 0))
             {
                 return;
             }
 
             _itemStacks.Clear();
+            _temporaryItemStacks.Clear();
             Recalculate();
         }
 
@@ -92,27 +127,41 @@ namespace CatMouse.Game.Player
 
             foreach (KeyValuePair<RunItemDefinition, int> itemStack in _itemStacks)
             {
-                IReadOnlyList<RunItemModifier> modifiers = itemStack.Key.Modifiers;
-                for (int index = 0; index < modifiers.Count; index++)
-                {
-                    RunItemModifier modifier = modifiers[index];
-                    if (modifier.StatType != statType)
-                    {
-                        continue;
-                    }
+                AddModifierValues(itemStack, statType, ref flatBonus, ref percentBonus);
+            }
 
-                    if (modifier.Operation == PlayerStatModifierOperation.Flat)
-                    {
-                        flatBonus += modifier.Value * itemStack.Value;
-                    }
-                    else
-                    {
-                        percentBonus += modifier.Value * itemStack.Value;
-                    }
-                }
+            foreach (KeyValuePair<RunItemDefinition, int> itemStack in _temporaryItemStacks)
+            {
+                AddModifierValues(itemStack, statType, ref flatBonus, ref percentBonus);
             }
 
             return (baseValue + flatBonus) * (1f + percentBonus);
+        }
+
+        private static void AddModifierValues(
+            KeyValuePair<RunItemDefinition, int> itemStack,
+            PlayerStatType statType,
+            ref float flatBonus,
+            ref float percentBonus)
+        {
+            IReadOnlyList<RunItemModifier> modifiers = itemStack.Key.Modifiers;
+            for (int index = 0; index < modifiers.Count; index++)
+            {
+                RunItemModifier modifier = modifiers[index];
+                if (modifier.StatType != statType)
+                {
+                    continue;
+                }
+
+                if (modifier.Operation == PlayerStatModifierOperation.Flat)
+                {
+                    flatBonus += modifier.Value * itemStack.Value;
+                }
+                else
+                {
+                    percentBonus += modifier.Value * itemStack.Value;
+                }
+            }
         }
     }
 }

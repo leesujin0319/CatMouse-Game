@@ -12,6 +12,7 @@ namespace CatMouse.Game.Run
         [Header("References")]
         [SerializeField] private PlayerRunStats _runStats;
         [SerializeField] private RunItemChoiceView _choiceView;
+        [SerializeField] private PlayerScreenPositionController _screenPositionController;
         [SerializeField] private RunItemDefinition[] _availableItems = Array.Empty<RunItemDefinition>();
 
         [Header("Timing")]
@@ -82,7 +83,10 @@ namespace CatMouse.Game.Run
                 return;
             }
 
-            if (!_runStats.TryAcquire(itemDefinition))
+            bool applied = itemDefinition.IsTemporary
+                ? _screenPositionController != null && _screenPositionController.TryStartTemporarySpeedEffect(itemDefinition)
+                : _runStats.TryAcquire(itemDefinition);
+            if (!applied)
             {
                 return;
             }
@@ -118,7 +122,10 @@ namespace CatMouse.Game.Run
 
         private void EndChoice()
         {
-            _choiceView?.Hide();
+            if (_choiceView != null)
+            {
+                _choiceView.Hide();
+            }
 
             if (!_isChoosing)
             {

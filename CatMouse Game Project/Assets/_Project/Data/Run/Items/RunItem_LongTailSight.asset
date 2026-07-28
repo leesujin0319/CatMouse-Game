@@ -16,6 +16,7 @@ MonoBehaviour:
   _description: "\uACF5\uACA9 \uBC94\uC704 +25%"
   _icon: {fileID: 0}
   _maximumStacks: 10
+  _temporaryDuration: 0
   _modifiers:
   - _statType: 2
     _operation: 1

@@ -13,9 +13,10 @@ MonoBehaviour:
   m_Name: RunItem_RunCheese
   m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.Run.RunItemDefinition
   _displayName: "\uB2EC\uB9AC\uAE30 \uCE58\uC988"
-  _description: "\uC804\uC9C4 \uC18D\uB3C4 +15%"
+  _description: "3\uCD08 \uB3D9\uC548 \uC804\uC9C4 \uC18D\uB3C4 +15%"
   _icon: {fileID: 0}
   _maximumStacks: 10
+  _temporaryDuration: 3
   _modifiers:
   - _statType: 4
     _operation: 1

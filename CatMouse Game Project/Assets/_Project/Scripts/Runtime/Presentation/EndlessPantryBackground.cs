@@ -18,11 +18,13 @@ namespace CatMouse.Game.Presentation
         private float _tileWidth;
         private float _tileStride;
         private float _lastScrollX;
+        private float _lastCameraX;
 
         private void Awake()
         {
             RefreshDimensions();
             _lastScrollX = _scrollDriver != null ? _scrollDriver.position.x : 0f;
+            _lastCameraX = _worldCamera != null ? _worldCamera.transform.position.x : 0f;
             RecycleTiles();
         }
 
@@ -59,6 +61,7 @@ namespace CatMouse.Game.Presentation
             _scrollFactor = Mathf.Clamp01(scrollFactor);
             _isCameraRelative = isCameraRelative;
             _lastScrollX = _scrollDriver != null ? _scrollDriver.position.x : 0f;
+            _lastCameraX = _worldCamera != null ? _worldCamera.transform.position.x : 0f;
 
             RefreshDimensions();
         }
@@ -89,6 +92,7 @@ namespace CatMouse.Game.Presentation
             }
 
             _lastScrollX = _scrollDriver.position.x;
+            _lastCameraX = _worldCamera.transform.position.x;
         }
 
         private void ScrollWithDriver()
@@ -100,8 +104,10 @@ namespace CatMouse.Game.Presentation
 
             var scrollX = _scrollDriver.position.x;
             var scrollDelta = scrollX - _lastScrollX;
+            var cameraX = _worldCamera.transform.position.x;
+            var cameraDelta = cameraX - _lastCameraX;
 
-            if (Mathf.Approximately(scrollDelta, 0f))
+            if (Mathf.Approximately(scrollDelta, 0f) && Mathf.Approximately(cameraDelta, 0f))
             {
                 return;
             }
@@ -111,15 +117,16 @@ namespace CatMouse.Game.Presentation
                 var tile = _tiles[index];
                 if (tile != null)
                 {
-                var scrollDistance = _isCameraRelative
-                    ? scrollDelta * (1f - _scrollFactor)
-                    : -scrollDelta * _scrollFactor;
+                    var scrollDistance = _isCameraRelative
+                        ? cameraDelta - (scrollDelta * _scrollFactor)
+                        : -scrollDelta * _scrollFactor;
 
-                tile.transform.position += Vector3.right * scrollDistance;
-            }
+                    tile.transform.position += Vector3.right * scrollDistance;
+                }
             }
 
             _lastScrollX = scrollX;
+            _lastCameraX = cameraX;
         }
 
         private void RecycleTiles()

@@ -16,6 +16,9 @@ namespace CatMouse.Game.Run
         [Header("Stacking")]
         [SerializeField, Min(1)] private int _maximumStacks = 1;
 
+        [Header("Temporary Effect")]
+        [SerializeField, Min(0f)] private float _temporaryDuration;
+
         [Header("Stat Modifiers")]
         [SerializeField] private RunItemModifier[] _modifiers = System.Array.Empty<RunItemModifier>();
 
@@ -23,11 +26,14 @@ namespace CatMouse.Game.Run
         public string Description => _description;
         public Sprite Icon => _icon;
         public int MaximumStacks => _maximumStacks;
+        public float TemporaryDuration => _temporaryDuration;
+        public bool IsTemporary => _temporaryDuration > 0f;
         public IReadOnlyList<RunItemModifier> Modifiers => _modifiers;
 
         private void OnValidate()
         {
             _maximumStacks = Mathf.Max(1, _maximumStacks);
+            _temporaryDuration = Mathf.Max(0f, _temporaryDuration);
             _modifiers ??= System.Array.Empty<RunItemModifier>();
         }
     }
