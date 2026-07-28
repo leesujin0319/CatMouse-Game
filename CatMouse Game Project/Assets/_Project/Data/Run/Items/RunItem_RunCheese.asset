@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6fe37733d20d46b9ac129b11b4bae68b, type: 3}
+  m_Name: RunItem_RunCheese
+  m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.Run.RunItemDefinition
+  _displayName: "\uB2EC\uB9AC\uAE30 \uCE58\uC988"
+  _description: "\uC804\uC9C4 \uC18D\uB3C4 +15%"
+  _icon: {fileID: 0}
+  _maximumStacks: 10
+  _modifiers:
+  - _statType: 4
+    _operation: 1
+    _value: 0.15

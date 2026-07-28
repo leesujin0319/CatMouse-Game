@@ -63,9 +63,9 @@ namespace CatMouse.Game.Player
             float movement = _speed * deltaTime;
             if (distance <= _hitRadius + movement)
             {
-                if (_target.TryTakeDamage(_damage, out float healthRestoreAmount))
+                if (_target.TryTakeDamage(_damage, out bool wasDefeated) && wasDefeated)
                 {
-                    _runHealth?.Restore(healthRestoreAmount);
+                    _runHealth?.Restore(_target.HealthRestoreOnDefeat);
                 }
 
                 Deactivate();

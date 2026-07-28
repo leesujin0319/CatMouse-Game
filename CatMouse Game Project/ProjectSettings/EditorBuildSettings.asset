@@ -8,6 +8,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Project/Scenes/Development/Dev_PantryBackground.unity
     guid: 987e7765a23d190468d8fc5b0450c976
+  - enabled: 1
+    path: Assets/_Project/Scenes/Development/PlayerScene.unity
+    guid: c2052c892a3273b45a608d1c854336d6
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0
