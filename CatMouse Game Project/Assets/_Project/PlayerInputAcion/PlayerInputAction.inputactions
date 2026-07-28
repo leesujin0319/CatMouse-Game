@@ -4,12 +4,12 @@
     "maps": [
         {
             "name": "PlayerMouse",
-            "id": "c0f97928-11ea-47b5-9019-1d1aee1f73da",
+            "id": "770cdcf4-d0f4-43c9-a23a-9132159bd1a1",
             "actions": [
                 {
                     "name": "Move",
                     "type": "Button",
-                    "id": "db62f14c-a5f8-4b1c-9e9e-a5740d2538fb",
+                    "id": "d844cae4-5309-4a7b-8d54-00eebe192c95",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -19,7 +19,7 @@
             "bindings": [
                 {
                     "name": "",
-                    "id": "c0e08853-400f-488a-9861-20fc87b79baa",
+                    "id": "278d2327-1ab7-4343-8df2-2776b025fb17",
                     "path": "<Keyboard>/space",
                     "interactions": "",
                     "processors": "",
@@ -30,7 +30,7 @@
                 },
                 {
                     "name": "",
-                    "id": "664445ed-c68e-48a0-8b90-07d518a6b652",
+                    "id": "2f2f3b65-6e2e-415b-ba9a-ad27e2023e84",
                     "path": "<Mouse>/leftButton",
                     "interactions": "",
                     "processors": "",

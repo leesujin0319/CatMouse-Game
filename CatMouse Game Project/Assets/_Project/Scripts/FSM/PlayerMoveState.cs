@@ -21,7 +21,7 @@ public sealed class PlayerMoveState : PlayerBaseState
 
     public override void HandleInput()
     {
-        // 수정: Shift 입력 대신 아이템으로 활성화된 Run 효과가 있을 때만 Run 상태로 분기합니다.
+
         if (stateMachine.player.IsRunEffectActive)
         {
             stateMachine.ChangeState(stateMachine.playerRunState);

@@ -25,6 +25,7 @@ namespace CatMouse.Game.Player
         [SerializeField] private float _minimumY = DefaultMinimumY;
         [SerializeField] private float _maximumY = DefaultMaximumY;
         [SerializeField] private RunVerticalBounds _verticalBounds;
+        [SerializeField] private PlayerRunStats _runStats;
 
         [Header("Distance")]
         [SerializeField, Min(0f)] private float _metersPerWorldUnit = DefaultMetersPerWorldUnit;
@@ -92,9 +93,11 @@ namespace CatMouse.Game.Player
                 maximumY = floorMaximumY;
             }
 
-            position.x += _forwardSpeed * Time.deltaTime;
+            float forwardSpeed = GetForwardSpeed();
+            float verticalSpeed = GetVerticalSpeed();
+            position.x += forwardSpeed * Time.deltaTime;
             position.y = Mathf.Clamp(
-                position.y + (verticalDirection * _verticalSpeed * Time.deltaTime),
+                position.y + (verticalDirection * verticalSpeed * Time.deltaTime),
                 minimumY,
                 maximumY);
 
@@ -173,6 +176,20 @@ namespace CatMouse.Game.Player
         {
             DistanceMeters = Mathf.Max(0f, transform.position.x - _startX) * _metersPerWorldUnit;
             DistanceChanged?.Invoke(DistanceMeters);
+        }
+
+        private float GetForwardSpeed()
+        {
+            return _runStats != null && _runStats.IsInitialized
+                ? _runStats.Current.ForwardSpeed
+                : _forwardSpeed;
+        }
+
+        private float GetVerticalSpeed()
+        {
+            return _runStats != null && _runStats.IsInitialized
+                ? _runStats.Current.VerticalSpeed
+                : _verticalSpeed;
         }
     }
 }

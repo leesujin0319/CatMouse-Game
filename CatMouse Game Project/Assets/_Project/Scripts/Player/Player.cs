@@ -1,3 +1,4 @@
+using CatMouse.Game.Player;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -14,6 +15,7 @@ public class Player : MonoBehaviour
     [SerializeField] private float runSpeed = 7f;
     [SerializeField] private float minY = -4f;
     [SerializeField] private float maxY = 4f;
+    [SerializeField] private PlayerRunStats runStats;
 
     [Header("Run Effect")]
     [SerializeField] private float defaultRunDuration = 2f;
@@ -27,8 +29,8 @@ public class Player : MonoBehaviour
     public float VerticalInput { get; private set; }
     public bool HasMovementInput => Mathf.Abs(VerticalInput) > 0.01f;
     public bool IsRunEffectActive => runEffectRemainingTime > 0f;
-    public float MoveSpeed => moveSpeed;
-    public float RunSpeed => runSpeed;
+    public float MoveSpeed => GetAdjustedVerticalSpeed(moveSpeed);
+    public float RunSpeed => GetAdjustedVerticalSpeed(runSpeed);
 
     private float fixedXPosition;
     private float runEffectRemainingTime;
@@ -68,7 +70,6 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
-        // 수정: 아이템으로 부여된 Run 효과 시간도 상태머신 갱신 전에 함께 줄여줍니다.
         ReadInput();
         UpdateRunEffectTimer();
         stateMachine.HandleInput();
@@ -106,7 +107,6 @@ public class Player : MonoBehaviour
 
     public void ActivateRunEffect(float duration = -1f)
     {
-        // 수정: 아이템이 이 메서드를 호출하면 지정 시간 동안 RunState 진입 조건이 활성화됩니다.
         float appliedDuration = duration > 0f ? duration : defaultRunDuration;
         runEffectRemainingTime = Mathf.Max(runEffectRemainingTime, appliedDuration);
     }
@@ -119,7 +119,6 @@ public class Player : MonoBehaviour
 
     private void UpdateRunEffectTimer()
     {
-        // 수정: Run 효과 시간이 끝나면 자동으로 MoveState가 다시 기본 상태를 맡도록 남은 시간을 감소시킵니다.
         if (runEffectRemainingTime <= 0f)
         {
             return;
@@ -141,5 +140,16 @@ public class Player : MonoBehaviour
             minY = maxY;
             maxY = temporaryValue;
         }
+    }
+
+    private float GetAdjustedVerticalSpeed(float fallbackSpeed)
+    {
+        if (runStats == null || !runStats.IsInitialized)
+        {
+            return fallbackSpeed;
+        }
+
+        float baseSpeed = Mathf.Max(0.01f, moveSpeed);
+        return runStats.Current.VerticalSpeed * (fallbackSpeed / baseSpeed);
     }
 }

@@ -18,6 +18,7 @@ namespace CatMouse.Game.Player
         [SerializeField] private PrototypeEnemySpawner _enemySpawner;
         [SerializeField] private Transform _projectileRoot;
         [SerializeField] private PrototypeAcornProjectile _projectileTemplate;
+        [SerializeField] private PlayerRunStats _runStats;
 
         [Header("Attack")]
         [SerializeField] private Vector2 _attackOriginOffset = new(0.55f, 0.5f);
@@ -34,6 +35,22 @@ namespace CatMouse.Game.Player
         private void Awake()
         {
             WarmPool();
+        }
+
+        private void OnEnable()
+        {
+            if (_runStats != null)
+            {
+                _runStats.StatsChanged += HandleStatsChanged;
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (_runStats != null)
+            {
+                _runStats.StatsChanged -= HandleStatsChanged;
+            }
         }
 
         private void Update()
@@ -96,7 +113,8 @@ namespace CatMouse.Game.Player
 
         private void TryFireStraightProjectile()
         {
-            if (_attackRange <= 0f)
+            PlayerStatsSnapshot stats = GetCurrentStats();
+            if (stats.AttackRange <= 0f)
             {
                 return;
             }
@@ -108,16 +126,16 @@ namespace CatMouse.Game.Player
                 return;
             }
 
-            var lifetime = _projectileSpeed > Mathf.Epsilon
-                ? Mathf.Min(_projectileLifetime, _attackRange / _projectileSpeed)
+            var lifetime = stats.ProjectileSpeed > Mathf.Epsilon
+                ? Mathf.Min(_projectileLifetime, stats.AttackRange / stats.ProjectileSpeed)
                 : _projectileLifetime;
             projectile.Spawn(
                 origin,
                 _enemySpawner,
-                _projectileSpeed,
-                _damage,
+                stats.ProjectileSpeed,
+                stats.AttackDamage,
                 lifetime);
-            _attackCooldown = _attackInterval;
+            _attackCooldown = 1f / stats.AttacksPerSecond;
         }
 
         private PrototypeAcornProjectile GetAvailableProjectile()
@@ -140,6 +158,28 @@ namespace CatMouse.Game.Player
                 && _projectileRoot != null
                 && _projectileTemplate != null
                 && _pool.Count > 0;
+        }
+
+        private PlayerStatsSnapshot GetCurrentStats()
+        {
+            if (_runStats != null && _runStats.IsInitialized)
+            {
+                return _runStats.Current;
+            }
+
+            return new PlayerStatsSnapshot(
+                _damage,
+                1f / _attackInterval,
+                _attackRange,
+                _projectileSpeed,
+                0f,
+                0f);
+        }
+
+        private void HandleStatsChanged(PlayerStatsSnapshot stats)
+        {
+            float nextAttackInterval = 1f / stats.AttacksPerSecond;
+            _attackCooldown = Mathf.Min(_attackCooldown, nextAttackInterval);
         }
     }
 }
