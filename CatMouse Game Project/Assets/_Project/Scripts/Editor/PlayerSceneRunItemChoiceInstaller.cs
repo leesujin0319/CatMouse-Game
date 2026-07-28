@@ -193,7 +193,6 @@ namespace CatMouse.Game.Editor
             serializedController.FindProperty("_runStats").objectReferenceValue = runStats;
             serializedController.FindProperty("_choiceView").objectReferenceValue = choiceView;
             serializedController.FindProperty("_screenPositionController").objectReferenceValue = screenPositionController;
-            serializedController.FindProperty("_choiceInterval").floatValue = 15f;
 
             SerializedProperty itemsProperty = serializedController.FindProperty("_availableItems");
             itemsProperty.arraySize = itemDefinitions.Count;

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using CatMouse.Game.Player;
 using CatMouse.Game.Run;
 using UnityEngine;
 
@@ -22,6 +23,8 @@ namespace CatMouse.Game.Enemy
         [SerializeField] private Camera _worldCamera;
         [SerializeField] private RunVerticalBounds _verticalBounds;
         [SerializeField] private RunProgressController _runProgress;
+        [SerializeField] private PlayerRunHealth _runHealth;
+        [SerializeField] private RunExperienceController _experience;
         [SerializeField] private Transform _cheeseRoot;
         [SerializeField] private PrototypeCheeseDrop _cheeseTemplate;
         private Transform _collector;
@@ -38,6 +41,10 @@ namespace CatMouse.Game.Enemy
         [SerializeField, Min(0f)] private float _lifetime = DefaultLifetime;
         [SerializeField, Min(0f)] private float _despawnLeftPadding = DefaultDespawnLeftPadding;
         [SerializeField, Min(0f)] private float _pickupRadius = DefaultPickupRadius;
+
+        [Header("Rewards")]
+        [SerializeField, Min(0f)] private float _healthRestorePerCheese = 2f;
+        [SerializeField, Min(0f)] private float _experiencePerCheese = 1f;
 
         private readonly List<PrototypeCheeseDrop> _pool = new();
 
@@ -92,6 +99,8 @@ namespace CatMouse.Game.Enemy
         public void SetCollector(Transform collector)
         {
             _collector = collector;
+            _runHealth = collector != null ? collector.GetComponent<PlayerRunHealth>() : null;
+            _experience = collector != null ? collector.GetComponent<RunExperienceController>() : null;
         }
 
         public void SetRunProgress(RunProgressController runProgress)
@@ -110,6 +119,8 @@ namespace CatMouse.Game.Enemy
             _lifetime = Mathf.Max(0f, _lifetime);
             _despawnLeftPadding = Mathf.Max(0f, _despawnLeftPadding);
             _pickupRadius = Mathf.Max(0f, _pickupRadius);
+            _healthRestorePerCheese = Mathf.Max(0f, _healthRestorePerCheese);
+            _experiencePerCheese = Mathf.Max(0f, _experiencePerCheese);
         }
 
         private void WarmPool()
@@ -159,7 +170,11 @@ namespace CatMouse.Game.Enemy
 
                     if (_collector != null)
                     {
-                        cheese.TryCollect(_collector.position, _pickupRadius);
+                        if (cheese.TryCollect(_collector.position, _pickupRadius))
+                        {
+                            _runHealth?.Restore(_healthRestorePerCheese);
+                            _experience?.GainExperience(_experiencePerCheese);
+                        }
                     }
                 }
             }

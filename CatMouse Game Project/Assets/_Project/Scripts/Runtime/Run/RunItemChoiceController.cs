@@ -15,35 +15,16 @@ namespace CatMouse.Game.Run
         [SerializeField] private PlayerScreenPositionController _screenPositionController;
         [SerializeField] private RunItemDefinition[] _availableItems = Array.Empty<RunItemDefinition>();
 
-        [Header("Timing")]
-        [SerializeField, Min(1f)] private float _choiceInterval = 15f;
-
         private readonly List<RunItemDefinition> _activeChoices = new();
 
-        private float _elapsedTime;
         private float _timeScaleBeforeChoice = 1f;
         private bool _isChoosing;
 
         public bool IsChoosing => _isChoosing;
-        public float ChoiceInterval => _choiceInterval;
 
         private void Awake()
         {
             _choiceView?.Hide();
-        }
-
-        private void Update()
-        {
-            if (!Application.isPlaying || _isChoosing || !HasValidConfiguration())
-            {
-                return;
-            }
-
-            _elapsedTime += Time.deltaTime;
-            if (_elapsedTime >= _choiceInterval)
-            {
-                RequestChoice();
-            }
         }
 
         private void OnDisable()
@@ -53,7 +34,6 @@ namespace CatMouse.Game.Run
 
         private void OnValidate()
         {
-            _choiceInterval = Mathf.Max(1f, _choiceInterval);
             _availableItems ??= Array.Empty<RunItemDefinition>();
         }
 
@@ -91,7 +71,6 @@ namespace CatMouse.Game.Run
                 return;
             }
 
-            _elapsedTime = 0f;
             EndChoice();
         }
 

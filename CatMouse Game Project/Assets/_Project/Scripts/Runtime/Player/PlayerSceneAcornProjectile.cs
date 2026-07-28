@@ -16,6 +16,8 @@ namespace CatMouse.Game.Player
         private static Sprite s_acornSprite;
 
         [SerializeField] private SpriteRenderer _spriteRenderer;
+        [SerializeField] private CircleCollider2D _hitCollider;
+        [SerializeField] private Rigidbody2D _rigidbody;
 
         private PlayerSceneTestEnemy _target;
         private PlayerRunHealth _runHealth;
@@ -44,6 +46,7 @@ namespace CatMouse.Game.Player
             _remainingLifetime = Mathf.Max(0.1f, lifetime);
             _hitRadius = Mathf.Max(0f, hitRadius);
             _runHealth = runHealth;
+            ConfigureHitCollider();
             gameObject.SetActive(true);
         }
 
@@ -66,6 +69,7 @@ namespace CatMouse.Game.Player
             _remainingLifetime = Mathf.Max(0.1f, lifetime);
             _hitRadius = Mathf.Max(0f, hitRadius);
             transform.right = _direction;
+            ConfigureHitCollider();
             gameObject.SetActive(true);
         }
 
@@ -85,20 +89,7 @@ namespace CatMouse.Game.Player
 
             if (_enemySpawner != null)
             {
-                Vector3 previousPosition = transform.position;
-                Vector3 nextPosition = previousPosition + (Vector3)(_direction * (_speed * deltaTime));
-                transform.position = nextPosition;
-
-                if (_enemySpawner.TryDamageFirstEnemyInSegment(
-                        previousPosition,
-                        nextPosition,
-                        _hitRadius,
-                        _damage,
-                        _direction))
-                {
-                    Deactivate();
-                }
-
+                transform.position += (Vector3)(_direction * (_speed * deltaTime));
                 return;
             }
 
@@ -132,6 +123,23 @@ namespace CatMouse.Game.Player
             EnsurePresentation();
         }
 
+        private void OnTriggerEnter2D(Collider2D other)
+        {
+            if (IsAvailable || _enemySpawner == null)
+            {
+                return;
+            }
+
+            PrototypeEnemyMover enemy = other.GetComponentInParent<PrototypeEnemyMover>();
+            if (enemy == null || enemy.IsAvailable)
+            {
+                return;
+            }
+
+            enemy.TryTakeDamage(_damage, _direction);
+            Deactivate();
+        }
+
         private void Deactivate()
         {
             _target = null;
@@ -155,6 +163,33 @@ namespace CatMouse.Game.Player
             _spriteRenderer.sprite = GetAcornSprite();
             _spriteRenderer.sortingLayerName = CharacterSortingLayer;
             _spriteRenderer.sortingOrder = 3;
+
+            _hitCollider ??= GetComponent<CircleCollider2D>();
+            if (_hitCollider == null)
+            {
+                _hitCollider = gameObject.AddComponent<CircleCollider2D>();
+            }
+
+            _hitCollider.isTrigger = true;
+
+            _rigidbody ??= GetComponent<Rigidbody2D>();
+            if (_rigidbody == null)
+            {
+                _rigidbody = gameObject.AddComponent<Rigidbody2D>();
+            }
+
+            _rigidbody.bodyType = RigidbodyType2D.Kinematic;
+            _rigidbody.gravityScale = 0f;
+            _rigidbody.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+            _rigidbody.constraints = RigidbodyConstraints2D.FreezeRotation;
+        }
+
+        private void ConfigureHitCollider()
+        {
+            if (_hitCollider != null)
+            {
+                _hitCollider.radius = Mathf.Max(0.01f, _hitRadius);
+            }
         }
 
         private static Sprite GetAcornSprite()
