@@ -15,5 +15,7 @@ MonoBehaviour:
   _sprite: {fileID: 21300000, guid: 8a8d462863d2f7141ab4e64ae8dc4c3c, type: 3}
   _color: {r: 0.48, g: 0.3, b: 0.68, a: 1}
   _visualScale: 1.25
-  _maximumHealth: 3
+  _maximumHealth: 4
+  _contactDamage: 14
   _speedMultiplier: 0.75
+  _equipment: {fileID: 0}

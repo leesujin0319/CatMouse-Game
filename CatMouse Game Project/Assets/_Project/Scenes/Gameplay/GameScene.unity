@@ -6904,6 +6904,7 @@ MonoBehaviour:
   _spriteRenderer: {fileID: 225919257}
   _color: {r: 0.88, g: 0.33, b: 0.25, a: 1}
   _maximumHealth: 1
+  _contactDamage: 5
 --- !u!4 &1760911665
 Transform:
   m_ObjectHideFlags: 0
@@ -7472,6 +7473,7 @@ GameObject:
   - component: {fileID: 1842839063}
   - component: {fileID: 1842839062}
   - component: {fileID: 1842839065}
+  - component: {fileID: 1842839066}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -7602,6 +7604,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.Player.PlayerRunHealth
   _maximumHealth: 100
   _drainPerSecond: 8
+  _damageInvulnerabilityDuration: 0.45
 --- !u!114 &1842839059
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7742,6 +7745,23 @@ MonoBehaviour:
   _itemChoiceController: {fileID: 1842839059}
   _initialLevel: 1
   _experiencePerLevel: 10
+--- !u!114 &1842839066
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1842839048}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd79164f146981b4797d9b254263e344, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.Player.PlayerHitFeedback
+  _runHealth: {fileID: 1842839058}
+  _spriteRenderer: {fileID: 1618809313}
+  _duration: 0.16
+  _scaleMultiplier: 1.1
+  _flashColor: {r: 1, g: 0.35, b: 0.35, a: 1}
 --- !u!1 &1842911342
 GameObject:
   m_ObjectHideFlags: 0
