@@ -10,6 +10,7 @@ namespace CatMouse.Game.Enemy
         private const int SpriteWidth = 8;
         private const int SpriteHeight = 12;
         private const int DefaultMaximumHealth = 1;
+        private const float PoisonTickInterval = 1f;
         private const float PixelsPerUnit = 12f;
         private const string CharacterSortingLayer = "Characters";
 
@@ -20,11 +21,18 @@ namespace CatMouse.Game.Enemy
         [SerializeField, Min(1)] private int _maximumHealth = DefaultMaximumHealth;
 
         private float _speed;
+        private float _poisonRemainingTime;
+        private float _poisonTickTimer;
         private int _currentHealth;
+        private int _poisonDamage;
         private Vector3 _baseLocalScale;
+        private Vector2 _poisonHitDirection;
 
         public bool IsAvailable => !gameObject.activeSelf;
         public EnemyArchetypeDefinition CurrentArchetype { get; private set; }
+        public int CurrentHealth => _currentHealth;
+        public int MaximumHealth => CurrentArchetype != null ? CurrentArchetype.MaximumHealth : _maximumHealth;
+        public float NormalizedHealth => MaximumHealth > 0 ? _currentHealth / (float)MaximumHealth : 0f;
         public event Action<Vector3, Vector2> Defeated;
 
         public void Spawn(
@@ -41,6 +49,7 @@ namespace CatMouse.Game.Enemy
             var archetypeSprite = archetype != null ? archetype.Sprite : null;
             _speed = Mathf.Max(0f, speed * speedMultiplier);
             _currentHealth = archetype != null ? archetype.MaximumHealth : _maximumHealth;
+            ClearPoison();
             _spriteRenderer.sprite = archetypeSprite != null
                 ? archetypeSprite
                 : GetPrototypeSprite();
@@ -79,15 +88,63 @@ namespace CatMouse.Game.Enemy
             Defeated?.Invoke(defeatedPosition, normalizedHitDirection);
             return true;
         }
+        public void ApplyPoison(int damagePerTick, float duration, Vector2 hitDirection)
+        {
+            if (IsAvailable || damagePerTick <= 0 || duration <= 0f)
+            {
+                return;
+            }
+            _poisonDamage = Mathf.Max(_poisonDamage, damagePerTick);
+            _poisonRemainingTime = Mathf.Max(_poisonRemainingTime, duration);
+            _poisonTickTimer = PoisonTickInterval;
+            _poisonHitDirection = hitDirection.sqrMagnitude > Mathf.Epsilon
+                ? hitDirection.normalized
+                : Vector2.right;
+        }
 
         public void Tick(float deltaTime, float leftDespawnBoundary)
         {
+            TickPoison(deltaTime);
+            if (IsAvailable)
+            {
+                return;
+            }
             transform.position += Vector3.left * (_speed * deltaTime);
 
             if (transform.position.x < leftDespawnBoundary)
             {
                 gameObject.SetActive(false);
             }
+        }
+        private void TickPoison(float deltaTime)
+        {
+            if (_poisonDamage <= 0 || _poisonRemainingTime <= 0f)
+            {
+                return;
+            }
+            _poisonRemainingTime -= deltaTime;
+            _poisonTickTimer -= deltaTime;
+            if (_poisonTickTimer > 0f)
+            {
+                if (_poisonRemainingTime <= 0f)
+                {
+                    ClearPoison();
+                }
+                return;
+            }
+            _poisonTickTimer = PoisonTickInterval;
+            bool wasDefeated = TryTakeDamage(_poisonDamage, _poisonHitDirection);
+            if (wasDefeated || _poisonRemainingTime <= 0f)
+            {
+                ClearPoison();
+            }
+        }
+        private void ClearPoison()
+        {
+            _poisonDamage = 0;
+            _poisonRemainingTime = 0f;
+            _poisonTickTimer = 0f;
+            _poisonHitDirection = Vector2.right;
         }
 
         private void Awake()

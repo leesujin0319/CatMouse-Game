@@ -52,6 +52,16 @@ namespace CatMouse.Game.Player
             SetCurrentHealth(_currentHealth + amount);
         }
 
+        public void TakeDamage(float amount)
+        {
+            if (amount <= 0f || _isDepleted)
+            {
+                return;
+            }
+
+            Consume(amount);
+        }
+
         private void Consume(float amount)
         {
             if (amount <= 0f)

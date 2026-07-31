@@ -656,7 +656,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7edefe3273153a440b3e925e902e2200, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.Presentation.EndlessPantryBackground
   _scrollDriver: {fileID: 559645746}
   _worldCamera: {fileID: 1050526394}
@@ -894,7 +894,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8559d72ed52615e4b86c9070509be2db, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.Presentation.PrototypeTransformMotion
   _verticalAmplitude: 0.025
   _rotationAmplitudeDegrees: 1.25
@@ -1676,7 +1676,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7edefe3273153a440b3e925e902e2200, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.Presentation.EndlessPantryBackground
   _scrollDriver: {fileID: 559645746}
   _worldCamera: {fileID: 1050526394}
@@ -1699,7 +1699,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 448d1da7de02ae84e9326c50238af047, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.Run.RunVerticalBounds
   _floorRenderer: {fileID: 79956293}
   _bottomInset: 0
@@ -1768,7 +1768,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 452b20328e5891a408110f93966ca07d, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.UI.TestRunDistanceHudView
   _distanceLabel: {fileID: 1638810421}
 --- !u!114 &665167416
@@ -1781,7 +1781,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.GraphicRaycaster
   m_IgnoreReversedGraphics: 1
   m_BlockingObjects: 0
@@ -1798,7 +1798,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.CanvasScaler
   m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
@@ -2005,7 +2005,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 886251e9a18ece04ea8e61686c173e1b, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachinePositionComposer
   CameraDistance: 10
   DeadZoneDepth: 0
@@ -2036,7 +2036,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f9dfa5b682dcd46bda6128250e975f58, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineCamera
   Priority:
     Enabled: 1
@@ -2406,7 +2406,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7edefe3273153a440b3e925e902e2200, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.Presentation.EndlessPantryBackground
   _scrollDriver: {fileID: 559645746}
   _worldCamera: {fileID: 1050526394}
@@ -2522,7 +2522,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 72ece51f2901e7445ab60da3685d6b5f, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineBrain
   ShowDebugText: 0
   ShowCameraFrustum: 1
@@ -2623,7 +2623,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 0.08627451, g: 0.12156863, b: 0.14509805, a: 0.8627451}
@@ -3292,7 +3292,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 92f6fc480c0bee04da68b12dfe28f2a7, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.Player.PrototypeAcornProjectile
   _spriteRenderer: {fileID: 1505747908}
 --- !u!212 &1505747908
@@ -3489,7 +3489,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Text
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -3500,7 +3500,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_FontData:
-    m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
+    m_Font: {fileID: 12800000, guid: 4a8c11591d67a46479d20ae8a7810a6c, type: 3}
     m_FontSize: 34
     m_FontStyle: 0
     m_BestFit: 0
@@ -3568,7 +3568,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6841596699c524249b2559140115c07d, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.Player.TestRunnerController
   _visualRenderer: {fileID: 1811710659}
   _visualHeight: 1
@@ -3577,6 +3577,7 @@ MonoBehaviour:
   _minimumY: -3.5
   _maximumY: 2.5
   _verticalBounds: {fileID: 0}
+  _runStats: {fileID: 0}
   _metersPerWorldUnit: 10
 --- !u!4 &1642208479
 Transform:
@@ -3605,11 +3606,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4de69594ea3400a44bbcbd8467e422cf, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.Player.TestPlayerAutoAttack
   _enemySpawner: {fileID: 2019089260}
   _projectileRoot: {fileID: 638168254}
   _projectileTemplate: {fileID: 1505747907}
+  _runStats: {fileID: 0}
   _attackOriginOffset: {x: 0.55, y: 0.5}
   _attackInterval: 0.55
   _attackRange: 8
@@ -3735,7 +3737,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 922ecd65a80265d478797ee90296fbdc, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.Enemy.PrototypeEnemyMover
   _spriteRenderer: {fileID: 225919257}
   _color: {r: 0.88, g: 0.33, b: 0.25, a: 1}
@@ -3967,7 +3969,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.7974482, y: 0.7974482, z: 1}
+  m_LocalScale: {x: 1.4084507, y: 1.4084507, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1642208479}
@@ -4041,7 +4043,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8559d72ed52615e4b86c9070509be2db, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.Presentation.PrototypeTransformMotion
   _verticalAmplitude: 0.035
   _rotationAmplitudeDegrees: 1.5
@@ -4076,7 +4078,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dec6c53a493ff3b49a13d3782ed14019, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.Enemy.PrototypeCheeseDrop
   _spriteRenderer: {fileID: 1821651722}
   _color: {r: 1, g: 0.73, b: 0.08, a: 1}
@@ -4447,7 +4449,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b1aa8e7775e326f4eb673f961e8d0076, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.Presentation.PantryVerticalLayout
   _farBackgroundLayer: {fileID: 178117776}
   _farBackgroundReference: {fileID: 64949499}
@@ -4492,7 +4494,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 888b5884409c48747a8998bf68d370bb, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.Presentation.TestRunCompositionRoot
   _runner: {fileID: 1642208478}
   _distanceHud: {fileID: 665167415}
@@ -4530,9 +4532,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 861f9cfc20ea29840b2de78b4c21776d, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.Enemy.PrototypeEnemySpawner
   _runner: {fileID: 1642208478}
+  _runProgress: {fileID: 0}
+  _collector: {fileID: 0}
   _worldCamera: {fileID: 1050526394}
   _enemyRoot: {fileID: 1178790712}
   _enemyTemplate: {fileID: 1760911663}
@@ -4553,13 +4557,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fb4c5ebcd5ed44e41aa50ba68573debf, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.Presentation.TestRunCameraDirector
   _runner: {fileID: 1642208478}
+  _followTarget: {fileID: 0}
   _cameraTarget: {fileID: 715780049}
   _verticalBounds: {fileID: 0}
   _worldCamera: {fileID: 0}
   _forwardOffset: 3
+  _followHorizontalMovement: 1
   _verticalFollowSpeed: 8
   _upperFollowOffset: 1.4
   _lowerFollowOffset: 1.8
@@ -4575,10 +4581,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a9ce93d291531f94a8b539d258064041, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.Enemy.PrototypeCheeseDropPool
   _worldCamera: {fileID: 1050526394}
   _verticalBounds: {fileID: 595604763}
+  _runProgress: {fileID: 0}
+  _runHealth: {fileID: 0}
+  _experience: {fileID: 0}
   _cheeseRoot: {fileID: 1321887850}
   _cheeseTemplate: {fileID: 1821651720}
   _poolCapacity: 24
@@ -4589,6 +4598,9 @@ MonoBehaviour:
   _scatterArcDegrees: 80
   _lifetime: 8
   _despawnLeftPadding: 1.25
+  _pickupRadius: 0.6
+  _healthRestorePerCheese: 2
+  _experiencePerCheese: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

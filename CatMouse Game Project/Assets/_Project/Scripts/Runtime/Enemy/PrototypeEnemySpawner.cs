@@ -14,6 +14,8 @@ namespace CatMouse.Game.Enemy
         private const float DefaultMaximumSpawnY = 1.55f;
         private const float EnemyHitHeightOffset = 0.35f;
         private const int DefaultPoolCapacity = 12;
+        private const float ContactDamageAtFullEnemyHealth = 10f;
+        private const float ContactDamageCooldown = 1f;
 
         [Header("References")]
         [SerializeField] private TestRunnerController _runner;
@@ -33,7 +35,10 @@ namespace CatMouse.Game.Enemy
         [SerializeField, Min(1)] private int _poolCapacity = DefaultPoolCapacity;
 
         private readonly List<PrototypeEnemyMover> _pool = new();
+        private PlayerRunHealth _collectorHealth;
+        private Collider2D _collectorCollider;
         private float _nextWaveDistanceMeters;
+        private float _nextContactDamageTime;
 
         private void Awake()
         {
@@ -44,6 +49,8 @@ namespace CatMouse.Game.Enemy
                 : _runner != null
                     ? _runner.transform
                     : null;
+            _collectorHealth = collector != null ? collector.GetComponent<PlayerRunHealth>() : null;
+            _collectorCollider = collector != null ? collector.GetComponent<Collider2D>() : null;
             if (_cheeseDropPool != null && collector != null)
             {
                 _cheeseDropPool.SetCollector(collector);
@@ -133,6 +140,51 @@ namespace CatMouse.Game.Enemy
             firstEnemy.TryTakeDamage(damage, hitDirection);
             return true;
         }
+        public PrototypeEnemyMover FindClosestActiveEnemy(Vector3 origin, float maximumRange)
+        {
+            float maximumDistanceSqr = maximumRange > 0f
+                ? maximumRange * maximumRange
+                : float.PositiveInfinity;
+            PrototypeEnemyMover closestEnemy = null;
+            float closestDistanceSqr = maximumDistanceSqr;
+            for (var index = 0; index < _pool.Count; index++)
+            {
+                PrototypeEnemyMover enemy = _pool[index];
+                if (enemy == null || enemy.IsAvailable)
+                {
+                    continue;
+                }
+                float distanceSqr = (enemy.transform.position - origin).sqrMagnitude;
+                if (distanceSqr < closestDistanceSqr)
+                {
+                    closestDistanceSqr = distanceSqr;
+                    closestEnemy = enemy;
+                }
+            }
+            return closestEnemy;
+        }
+        public int DamageEnemiesInRadius(Vector3 origin, float radius, int damage)
+        {
+            if (radius <= 0f || damage <= 0)
+            {
+                return 0;
+            }
+            int damagedEnemyCount = 0;
+            float radiusSqr = radius * radius;
+            for (var index = 0; index < _pool.Count; index++)
+            {
+                PrototypeEnemyMover enemy = _pool[index];
+                if (enemy == null
+                    || enemy.IsAvailable
+                    || (enemy.transform.position - origin).sqrMagnitude > radiusSqr)
+                {
+                    continue;
+                }
+                enemy.TryTakeDamage(damage, Vector2.right);
+                damagedEnemyCount++;
+            }
+            return damagedEnemyCount;
+        }
 
         private void WarmPool()
         {
@@ -177,8 +229,31 @@ namespace CatMouse.Game.Enemy
                 if (enemy != null && !enemy.IsAvailable)
                 {
                     enemy.Tick(Time.deltaTime, leftBoundary);
+                    if (!enemy.IsAvailable)
+                    {
+                        TryDealContactDamage(enemy);
+                    }
                 }
             }
+        }
+
+        private void TryDealContactDamage(PrototypeEnemyMover enemy)
+        {
+            if (_collectorHealth == null
+                || _collectorCollider == null
+                || Time.time < _nextContactDamageTime)
+            {
+                return;
+            }
+
+            Collider2D enemyCollider = enemy.GetComponent<Collider2D>();
+            if (enemyCollider == null || !enemyCollider.bounds.Intersects(_collectorCollider.bounds))
+            {
+                return;
+            }
+
+            _collectorHealth.TakeDamage(ContactDamageAtFullEnemyHealth * enemy.NormalizedHealth);
+            _nextContactDamageTime = Time.time + ContactDamageCooldown;
         }
 
         private void TrySpawnNextWave()

@@ -18,6 +18,8 @@ namespace CatMouse.Game.Run
 
         [Header("Temporary Effect")]
         [SerializeField, Min(0f)] private float _temporaryDuration;
+        [Header("Combat Evolution")]
+        [SerializeField] private RunCombatEffectType _combatEffectType;
 
         [Header("Stat Modifiers")]
         [SerializeField] private RunItemModifier[] _modifiers = System.Array.Empty<RunItemModifier>();
@@ -28,6 +30,7 @@ namespace CatMouse.Game.Run
         public int MaximumStacks => _maximumStacks;
         public float TemporaryDuration => _temporaryDuration;
         public bool IsTemporary => _temporaryDuration > 0f;
+        public RunCombatEffectType CombatEffectType => _combatEffectType;
         public IReadOnlyList<RunItemModifier> Modifiers => _modifiers;
 
         private void OnValidate()

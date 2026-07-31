@@ -28,6 +28,7 @@ namespace CatMouse.Game.Enemy
         [SerializeField] private Transform _cheeseRoot;
         [SerializeField] private PrototypeCheeseDrop _cheeseTemplate;
         private Transform _collector;
+        private PlayerRunCombatEvolution _combatEvolution;
 
         [Header("Pool")]
         [SerializeField, Min(1)] private int _poolCapacity = DefaultPoolCapacity;
@@ -101,6 +102,7 @@ namespace CatMouse.Game.Enemy
             _collector = collector;
             _runHealth = collector != null ? collector.GetComponent<PlayerRunHealth>() : null;
             _experience = collector != null ? collector.GetComponent<RunExperienceController>() : null;
+            _combatEvolution = collector != null ? collector.GetComponent<PlayerRunCombatEvolution>() : null;
         }
 
         public void SetRunProgress(RunProgressController runProgress)
@@ -170,6 +172,12 @@ namespace CatMouse.Game.Enemy
 
                     if (_collector != null)
                     {
+                        cheese.AttractTo(
+                            _collector.position,
+                            _combatEvolution != null ? _combatEvolution.CheeseMagnetRadius : 0f,
+                            _combatEvolution != null ? _combatEvolution.CheeseMagnetSpeed : 0f,
+                            Time.deltaTime);
+
                         if (cheese.TryCollect(_collector.position, _pickupRadius))
                         {
                             _runHealth?.Restore(_healthRestorePerCheese);

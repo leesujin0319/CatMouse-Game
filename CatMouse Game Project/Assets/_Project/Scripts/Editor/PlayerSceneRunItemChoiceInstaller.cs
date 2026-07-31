@@ -345,7 +345,7 @@ namespace CatMouse.Game.Editor
             textRect.anchoredPosition = position;
 
             Text text = textObject.AddComponent<Text>();
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            text.font = AssetDatabase.LoadAssetAtPath<Font>("Assets/_Project/Font/MemomentKkukkukk.ttf");
             text.text = value;
             text.fontSize = fontSize;
             text.alignment = alignment;

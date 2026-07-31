@@ -14,6 +14,7 @@ namespace CatMouse.Game.Player
 
         private readonly Dictionary<RunItemDefinition, int> _itemStacks = new();
         private readonly Dictionary<RunItemDefinition, int> _temporaryItemStacks = new();
+        private readonly Dictionary<RunItemDefinition, float> _temporaryItemStrengths = new();
 
         public event Action<PlayerStatsSnapshot> StatsChanged;
 
@@ -30,6 +31,7 @@ namespace CatMouse.Game.Player
             _baseStatsDefinition = baseStatsDefinition;
             _itemStacks.Clear();
             _temporaryItemStacks.Clear();
+            _temporaryItemStrengths.Clear();
             IsInitialized = _baseStatsDefinition != null;
 
             if (IsInitialized)
@@ -72,8 +74,27 @@ namespace CatMouse.Game.Player
 
             _temporaryItemStacks.TryGetValue(itemDefinition, out int currentStacks);
             _temporaryItemStacks[itemDefinition] = currentStacks + 1;
+            _temporaryItemStrengths[itemDefinition] = 1f;
             Recalculate();
             return true;
+        }
+
+        public void SetTemporaryEffectStrength(RunItemDefinition itemDefinition, float strength)
+        {
+            if (itemDefinition == null || !_temporaryItemStacks.ContainsKey(itemDefinition))
+            {
+                return;
+            }
+
+            float clampedStrength = Mathf.Clamp01(strength);
+            if (_temporaryItemStrengths.TryGetValue(itemDefinition, out float currentStrength)
+                && Mathf.Approximately(currentStrength, clampedStrength))
+            {
+                return;
+            }
+
+            _temporaryItemStrengths[itemDefinition] = clampedStrength;
+            Recalculate();
         }
 
         public void RemoveTemporary(RunItemDefinition itemDefinition)
@@ -86,6 +107,7 @@ namespace CatMouse.Game.Player
             if (currentStacks <= 1)
             {
                 _temporaryItemStacks.Remove(itemDefinition);
+                _temporaryItemStrengths.Remove(itemDefinition);
             }
             else
             {
@@ -104,6 +126,7 @@ namespace CatMouse.Game.Player
 
             _itemStacks.Clear();
             _temporaryItemStacks.Clear();
+            _temporaryItemStrengths.Clear();
             Recalculate();
         }
 
@@ -132,7 +155,10 @@ namespace CatMouse.Game.Player
 
             foreach (KeyValuePair<RunItemDefinition, int> itemStack in _temporaryItemStacks)
             {
-                AddModifierValues(itemStack, statType, ref flatBonus, ref percentBonus);
+                float strength = _temporaryItemStrengths.TryGetValue(itemStack.Key, out float temporaryStrength)
+                    ? temporaryStrength
+                    : 1f;
+                AddModifierValues(itemStack, statType, ref flatBonus, ref percentBonus, strength);
             }
 
             return (baseValue + flatBonus) * (1f + percentBonus);
@@ -142,7 +168,8 @@ namespace CatMouse.Game.Player
             KeyValuePair<RunItemDefinition, int> itemStack,
             PlayerStatType statType,
             ref float flatBonus,
-            ref float percentBonus)
+            ref float percentBonus,
+            float strength = 1f)
         {
             IReadOnlyList<RunItemModifier> modifiers = itemStack.Key.Modifiers;
             for (int index = 0; index < modifiers.Count; index++)
@@ -155,11 +182,11 @@ namespace CatMouse.Game.Player
 
                 if (modifier.Operation == PlayerStatModifierOperation.Flat)
                 {
-                    flatBonus += modifier.Value * itemStack.Value;
+                    flatBonus += modifier.Value * itemStack.Value * strength;
                 }
                 else
                 {
-                    percentBonus += modifier.Value * itemStack.Value;
+                    percentBonus += modifier.Value * itemStack.Value * strength;
                 }
             }
         }

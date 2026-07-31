@@ -51,6 +51,21 @@ namespace CatMouse.Game.Enemy
             gameObject.SetActive(true);
         }
 
+        public void AttractTo(Vector3 collectorPosition, float magnetRadius, float magnetSpeed, float deltaTime)
+        {
+            var radius = Mathf.Max(0f, magnetRadius);
+            if (radius <= 0f
+                || (transform.position - collectorPosition).sqrMagnitude > radius * radius)
+            {
+                return;
+            }
+
+            transform.position = Vector3.MoveTowards(
+                transform.position,
+                collectorPosition,
+                Mathf.Max(0f, magnetSpeed) * deltaTime);
+        }
+
         public void Tick(
             float deltaTime,
             float minimumY,

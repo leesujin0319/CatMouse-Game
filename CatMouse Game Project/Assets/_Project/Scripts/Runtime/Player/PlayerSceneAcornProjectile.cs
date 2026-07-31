@@ -23,7 +23,13 @@ namespace CatMouse.Game.Player
         private PlayerRunHealth _runHealth;
         private PrototypeEnemySpawner _enemySpawner;
         private Vector2 _direction;
+        private PrototypeEnemyMover _homingTarget;
         private float _speed;
+        private Vector3 _baseLocalScale;
+        private float _visualScale = 1f;
+        private float _poisonDuration;
+        private int _poisonDamage;
+        private bool _hasBaseLocalScale;
         private float _remainingLifetime;
         private float _hitRadius;
         private int _damage;
@@ -40,12 +46,18 @@ namespace CatMouse.Game.Player
             PlayerRunHealth runHealth)
         {
             transform.position = position;
+            EnsurePresentation();
             _target = target;
+            _enemySpawner = null;
+            _homingTarget = null;
             _speed = Mathf.Max(0f, speed);
             _damage = Mathf.Max(1, damage);
             _remainingLifetime = Mathf.Max(0.1f, lifetime);
             _hitRadius = Mathf.Max(0f, hitRadius);
             _runHealth = runHealth;
+            _poisonDamage = 0;
+            _poisonDuration = 0f;
+            SetVisualScale(1f);
             ConfigureHitCollider();
             gameObject.SetActive(true);
         }
@@ -57,17 +69,26 @@ namespace CatMouse.Game.Player
             float speed,
             int damage,
             float lifetime,
-            float hitRadius)
+            float hitRadius,
+            PrototypeEnemyMover homingTarget = null,
+            float visualScale = 1f,
+            int poisonDamage = 0,
+            float poisonDuration = 0f)
         {
             transform.position = position;
+            EnsurePresentation();
             _target = null;
             _runHealth = null;
             _enemySpawner = enemySpawner;
+            _homingTarget = homingTarget;
             _direction = direction.sqrMagnitude > Mathf.Epsilon ? direction.normalized : Vector2.right;
             _speed = Mathf.Max(0f, speed);
             _damage = Mathf.Max(1, damage);
             _remainingLifetime = Mathf.Max(0.1f, lifetime);
             _hitRadius = Mathf.Max(0f, hitRadius);
+            _poisonDamage = Mathf.Max(0, poisonDamage);
+            _poisonDuration = Mathf.Max(0f, poisonDuration);
+            SetVisualScale(visualScale);
             transform.right = _direction;
             ConfigureHitCollider();
             gameObject.SetActive(true);
@@ -89,6 +110,7 @@ namespace CatMouse.Game.Player
 
             if (_enemySpawner != null)
             {
+                UpdateHomingDirection();
                 transform.position += (Vector3)(_direction * (_speed * deltaTime));
                 return;
             }
@@ -121,6 +143,7 @@ namespace CatMouse.Game.Player
         private void Awake()
         {
             EnsurePresentation();
+            CacheBaseLocalScale();
         }
 
         private void OnTriggerEnter2D(Collider2D other)
@@ -136,7 +159,12 @@ namespace CatMouse.Game.Player
                 return;
             }
 
-            enemy.TryTakeDamage(_damage, _direction);
+            bool wasDefeated = enemy.TryTakeDamage(_damage, _direction);
+            if (!wasDefeated && _poisonDamage > 0)
+            {
+                enemy.ApplyPoison(_poisonDamage, _poisonDuration, _direction);
+            }
+
             Deactivate();
         }
 
@@ -145,6 +173,10 @@ namespace CatMouse.Game.Player
             _target = null;
             _runHealth = null;
             _enemySpawner = null;
+            _homingTarget = null;
+            _poisonDamage = 0;
+            _poisonDuration = 0f;
+            SetVisualScale(1f);
             gameObject.SetActive(false);
         }
 
@@ -188,10 +220,44 @@ namespace CatMouse.Game.Player
         {
             if (_hitCollider != null)
             {
-                _hitCollider.radius = Mathf.Max(0.01f, _hitRadius);
+                _hitCollider.radius = Mathf.Max(0.01f, _hitRadius / _visualScale);
             }
         }
 
+        private void UpdateHomingDirection()
+        {
+            if (_homingTarget == null || _homingTarget.IsAvailable)
+            {
+                return;
+            }
+
+            Vector2 targetDirection = _homingTarget.transform.position - transform.position;
+            if (targetDirection.sqrMagnitude <= Mathf.Epsilon)
+            {
+                return;
+            }
+
+            _direction = targetDirection.normalized;
+            transform.right = _direction;
+        }
+
+        private void SetVisualScale(float visualScale)
+        {
+            CacheBaseLocalScale();
+            _visualScale = Mathf.Max(0.1f, visualScale);
+            transform.localScale = _baseLocalScale * _visualScale;
+        }
+
+        private void CacheBaseLocalScale()
+        {
+            if (_hasBaseLocalScale)
+            {
+                return;
+            }
+
+            _baseLocalScale = transform.localScale;
+            _hasBaseLocalScale = true;
+        }
         private static Sprite GetAcornSprite()
         {
             if (s_acornSprite != null)

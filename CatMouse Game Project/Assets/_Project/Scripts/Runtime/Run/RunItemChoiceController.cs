@@ -13,6 +13,7 @@ namespace CatMouse.Game.Run
         [SerializeField] private PlayerRunStats _runStats;
         [SerializeField] private RunItemChoiceView _choiceView;
         [SerializeField] private PlayerScreenPositionController _screenPositionController;
+        [SerializeField] private PlayerRunCombatEvolution _combatEvolution;
         [SerializeField] private RunItemDefinition[] _availableItems = Array.Empty<RunItemDefinition>();
 
         private readonly List<RunItemDefinition> _activeChoices = new();
@@ -66,6 +67,11 @@ namespace CatMouse.Game.Run
             bool applied = itemDefinition.IsTemporary
                 ? _screenPositionController != null && _screenPositionController.TryStartTemporarySpeedEffect(itemDefinition)
                 : _runStats.TryAcquire(itemDefinition);
+            if (!itemDefinition.IsTemporary)
+            {
+                _combatEvolution?.Apply(itemDefinition);
+            }
+
             if (!applied)
             {
                 return;

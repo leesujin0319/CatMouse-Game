@@ -6,6 +6,7 @@ namespace CatMouse.Game.Player
     [DisallowMultipleComponent]
     public sealed class PlayerScreenPositionController : MonoBehaviour
     {
+        private const float TemporaryForwardPhase = 0.4f;
         [SerializeField] private global::Player _player;
         [SerializeField] private PlayerRunStats _runStats;
         [SerializeField] private Camera _worldCamera;
@@ -43,7 +44,16 @@ namespace CatMouse.Game.Player
 
             _temporaryRemaining -= Time.deltaTime;
             float progress = 1f - Mathf.Clamp01(_temporaryRemaining / _temporaryDuration);
-            ApplyViewportPosition(Mathf.Lerp(_temporaryStartViewportX, _centerViewportX, progress));
+            if (progress <= TemporaryForwardPhase)
+            {
+                ApplyViewportPosition(Mathf.Lerp(_temporaryStartViewportX, _centerViewportX, progress / TemporaryForwardPhase));
+            }
+            else
+            {
+                float returnProgress = Mathf.InverseLerp(TemporaryForwardPhase, 1f, progress);
+                _runStats?.SetTemporaryEffectStrength(_temporaryItem, 1f - returnProgress);
+                ApplyViewportPosition(Mathf.Lerp(_centerViewportX, GetStatBasedViewportX(), returnProgress));
+            }
 
             if (_temporaryRemaining <= 0f)
             {

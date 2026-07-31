@@ -16,6 +16,7 @@ namespace CatMouse.Game.Player
         [SerializeField] private PlayerRunStats _runStats;
         [SerializeField] private PlayerRunHealth _runHealth;
         [SerializeField] private PrototypeEnemySpawner _enemySpawner;
+        [SerializeField] private PlayerRunCombatEvolution _combatEvolution;
         [SerializeField] private Transform _projectileRoot;
         [SerializeField] private PlayerSceneAcornProjectile _projectileTemplate;
 
@@ -157,21 +158,41 @@ namespace CatMouse.Game.Player
 
         private void FireForward()
         {
-            PlayerSceneAcornProjectile projectile = GetAvailableProjectile();
-            if (projectile == null)
+            PlayerStatsSnapshot stats = _runStats.Current;
+            int projectileCount = 1 + (_combatEvolution?.AdditionalProjectileCount ?? 0);
+            float verticalSpacing = 0.18f;
+
+            for (int index = 0; index < projectileCount; index++)
             {
-                return;
+                PlayerSceneAcornProjectile projectile = GetAvailableProjectile();
+                if (projectile == null)
+                {
+                    break;
+                }
+
+                float verticalOffset = (index - ((projectileCount - 1) * 0.5f)) * verticalSpacing;
+                Vector3 spawnPosition = transform.position
+                    + (Vector3)_attackOriginOffset
+                    + (Vector3.up * verticalOffset);
+                PrototypeEnemyMover homingTarget = _combatEvolution != null
+                    && _combatEvolution.UsesHomingProjectile
+                    ? _enemySpawner.FindClosestActiveEnemy(spawnPosition, stats.AttackRange)
+                    : null;
+
+                projectile.Spawn(
+                    spawnPosition,
+                    _enemySpawner,
+                    Vector2.right,
+                    stats.ProjectileSpeed,
+                    stats.AttackDamage,
+                    _projectileLifetime,
+                    DefaultHitRadius * (_combatEvolution?.ProjectileHitRadiusMultiplier ?? 1f),
+                    homingTarget,
+                    _combatEvolution?.ProjectileVisualScale ?? 1f,
+                    _combatEvolution?.PoisonDamagePerTick ?? 0,
+                    _combatEvolution?.PoisonDurationSeconds ?? 0f);
             }
 
-            PlayerStatsSnapshot stats = _runStats.Current;
-            projectile.Spawn(
-                transform.position + (Vector3)_attackOriginOffset,
-                _enemySpawner,
-                Vector2.right,
-                stats.ProjectileSpeed,
-                stats.AttackDamage,
-                _projectileLifetime,
-                DefaultHitRadius);
             _attackCooldown = 1f / stats.AttacksPerSecond;
         }
 
