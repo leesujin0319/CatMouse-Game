@@ -14,7 +14,6 @@ namespace CatMouse.Game.Enemy
         private const float DefaultMaximumSpawnY = 1.55f;
         private const float EnemyHitHeightOffset = 0.35f;
         private const int DefaultPoolCapacity = 12;
-        private const float ContactDamageAtFullEnemyHealth = 10f;
         private const float ContactDamageCooldown = 1f;
 
         [Header("References")]
@@ -252,8 +251,10 @@ namespace CatMouse.Game.Enemy
                 return;
             }
 
-            _collectorHealth.TakeDamage(ContactDamageAtFullEnemyHealth * enemy.NormalizedHealth);
-            _nextContactDamageTime = Time.time + ContactDamageCooldown;
+            if (_collectorHealth.TryTakeDamage(enemy.ContactDamage * enemy.NormalizedHealth))
+            {
+                _nextContactDamageTime = Time.time + ContactDamageCooldown;
+            }
         }
 
         private void TrySpawnNextWave()

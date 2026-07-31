@@ -10,28 +10,40 @@ namespace CatMouse.Game.Enemy
         private const int SpriteWidth = 8;
         private const int SpriteHeight = 12;
         private const int DefaultMaximumHealth = 1;
+        private const int DefaultContactDamage = 5;
+        private const float HitFeedbackDuration = 0.12f;
+        private const float HitScaleMultiplier = 1.12f;
         private const float PoisonTickInterval = 1f;
         private const float PixelsPerUnit = 12f;
         private const string CharacterSortingLayer = "Characters";
+
+        private static readonly Color HitColor = new(1f, 0.45f, 0.45f, 1f);
 
         private static Sprite s_prototypeSprite;
 
         [SerializeField] private SpriteRenderer _spriteRenderer;
         [SerializeField] private Color _color = new Color(0.88f, 0.33f, 0.25f, 1f);
         [SerializeField, Min(1)] private int _maximumHealth = DefaultMaximumHealth;
+        [SerializeField, Min(1)] private int _contactDamage = DefaultContactDamage;
 
         private float _speed;
         private float _poisonRemainingTime;
         private float _poisonTickTimer;
-        private int _currentHealth;
         private int _poisonDamage;
-        private Vector3 _baseLocalScale;
         private Vector2 _poisonHitDirection;
+        private float _hitFeedbackRemaining;
+        private int _currentHealth;
+        private int _currentContactDamage;
+        private Color _baseColor;
+        private Vector3 _baseLocalScale;
+        private Vector3 _spawnLocalScale;
 
         public bool IsAvailable => !gameObject.activeSelf;
         public EnemyArchetypeDefinition CurrentArchetype { get; private set; }
+        public EnemyEquipmentDefinition CurrentEquipment { get; private set; }
         public int CurrentHealth => _currentHealth;
-        public int MaximumHealth => CurrentArchetype != null ? CurrentArchetype.MaximumHealth : _maximumHealth;
+        public int MaximumHealth { get; private set; }
+        public int ContactDamage => _currentContactDamage;
         public float NormalizedHealth => MaximumHealth > 0 ? _currentHealth / (float)MaximumHealth : 0f;
         public event Action<Vector3, Vector2> Defeated;
 
@@ -43,27 +55,42 @@ namespace CatMouse.Game.Enemy
             transform.position = position;
             gameObject.SetActive(true);
             CurrentArchetype = archetype;
+            CurrentEquipment = archetype != null ? archetype.Equipment : null;
 
             var speedMultiplier = archetype != null ? archetype.SpeedMultiplier : 1f;
             var visualScale = archetype != null ? archetype.VisualScale : 1f;
             var archetypeSprite = archetype != null ? archetype.Sprite : null;
-            _speed = Mathf.Max(0f, speed * speedMultiplier);
-            _currentHealth = archetype != null ? archetype.MaximumHealth : _maximumHealth;
+            var maximumHealth = archetype != null ? archetype.MaximumHealth : _maximumHealth;
+            var contactDamage = archetype != null ? archetype.ContactDamage : _contactDamage;
+            var equipmentSpeedMultiplier = CurrentEquipment != null
+                ? CurrentEquipment.SpeedMultiplier
+                : 1f;
+            MaximumHealth = Mathf.Max(
+                1,
+                maximumHealth + (CurrentEquipment != null ? CurrentEquipment.HealthBonus : 0));
+            _currentHealth = MaximumHealth;
+            _currentContactDamage = Mathf.Max(
+                1,
+                contactDamage + (CurrentEquipment != null ? CurrentEquipment.ContactDamageBonus : 0));
+            _speed = Mathf.Max(0f, speed * speedMultiplier * equipmentSpeedMultiplier);
+            _hitFeedbackRemaining = 0f;
             ClearPoison();
             _spriteRenderer.sprite = archetypeSprite != null
                 ? archetypeSprite
                 : GetPrototypeSprite();
-            _spriteRenderer.color = archetypeSprite != null
+            _baseColor = archetypeSprite != null
                 ? Color.white
                 : archetype != null
                     ? archetype.Color
                     : _color;
+            _spriteRenderer.color = _baseColor;
 
             var sourceVisualHeight = GetSpriteVisualHeight(_spriteRenderer.sprite);
             var normalizedVisualScale = sourceVisualHeight > Mathf.Epsilon
                 ? visualScale / sourceVisualHeight
                 : visualScale;
-            transform.localScale = _baseLocalScale * normalizedVisualScale;
+            _spawnLocalScale = _baseLocalScale * normalizedVisualScale;
+            transform.localScale = _spawnLocalScale;
             GetComponent<CharacterSpriteCollider2D>()?.Refresh();
         }
 
@@ -77,6 +104,7 @@ namespace CatMouse.Game.Enemy
             _currentHealth = Mathf.Max(0, _currentHealth - damage);
             if (_currentHealth > 0)
             {
+                _hitFeedbackRemaining = HitFeedbackDuration;
                 return false;
             }
 
@@ -88,12 +116,14 @@ namespace CatMouse.Game.Enemy
             Defeated?.Invoke(defeatedPosition, normalizedHitDirection);
             return true;
         }
+
         public void ApplyPoison(int damagePerTick, float duration, Vector2 hitDirection)
         {
             if (IsAvailable || damagePerTick <= 0 || duration <= 0f)
             {
                 return;
             }
+
             _poisonDamage = Mathf.Max(_poisonDamage, damagePerTick);
             _poisonRemainingTime = Mathf.Max(_poisonRemainingTime, duration);
             _poisonTickTimer = PoisonTickInterval;
@@ -109,6 +139,8 @@ namespace CatMouse.Game.Enemy
             {
                 return;
             }
+
+            UpdateHitFeedback(deltaTime);
             transform.position += Vector3.left * (_speed * deltaTime);
 
             if (transform.position.x < leftDespawnBoundary)
@@ -116,12 +148,14 @@ namespace CatMouse.Game.Enemy
                 gameObject.SetActive(false);
             }
         }
+
         private void TickPoison(float deltaTime)
         {
             if (_poisonDamage <= 0 || _poisonRemainingTime <= 0f)
             {
                 return;
             }
+
             _poisonRemainingTime -= deltaTime;
             _poisonTickTimer -= deltaTime;
             if (_poisonTickTimer > 0f)
@@ -130,8 +164,10 @@ namespace CatMouse.Game.Enemy
                 {
                     ClearPoison();
                 }
+
                 return;
             }
+
             _poisonTickTimer = PoisonTickInterval;
             bool wasDefeated = TryTakeDamage(_poisonDamage, _poisonHitDirection);
             if (wasDefeated || _poisonRemainingTime <= 0f)
@@ -139,6 +175,7 @@ namespace CatMouse.Game.Enemy
                 ClearPoison();
             }
         }
+
         private void ClearPoison()
         {
             _poisonDamage = 0;
@@ -150,12 +187,14 @@ namespace CatMouse.Game.Enemy
         private void Awake()
         {
             _baseLocalScale = transform.localScale;
+            _spawnLocalScale = _baseLocalScale;
             EnsurePresentation();
         }
 
         private void OnValidate()
         {
             _maximumHealth = Mathf.Max(1, _maximumHealth);
+            _contactDamage = Mathf.Max(1, _contactDamage);
         }
 
         private void EnsurePresentation()
@@ -174,6 +213,26 @@ namespace CatMouse.Game.Enemy
             _spriteRenderer.color = _color;
             _spriteRenderer.sortingLayerName = CharacterSortingLayer;
             _spriteRenderer.sortingOrder = 1;
+            _baseColor = _color;
+        }
+
+        private void UpdateHitFeedback(float deltaTime)
+        {
+            if (_hitFeedbackRemaining <= 0f)
+            {
+                return;
+            }
+
+            _hitFeedbackRemaining = Mathf.Max(0f, _hitFeedbackRemaining - deltaTime);
+            var normalizedRemaining = _hitFeedbackRemaining / HitFeedbackDuration;
+            _spriteRenderer.color = Color.Lerp(_baseColor, HitColor, normalizedRemaining);
+            transform.localScale = _spawnLocalScale * Mathf.Lerp(1f, HitScaleMultiplier, normalizedRemaining);
+
+            if (_hitFeedbackRemaining <= 0f)
+            {
+                _spriteRenderer.color = _baseColor;
+                transform.localScale = _spawnLocalScale;
+            }
         }
 
         private static Sprite GetPrototypeSprite()

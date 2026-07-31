@@ -8,16 +8,20 @@ namespace CatMouse.Game.Player
     {
         [SerializeField, Min(1f)] private float _maximumHealth = 100f;
         [SerializeField, Min(0f)] private float _drainPerSecond = 1f;
+        [SerializeField, Min(0f)] private float _damageInvulnerabilityDuration = 0.45f;
 
         private float _currentHealth;
+        private float _damageInvulnerabilityRemaining;
         private bool _isDepleted;
 
+        public event Action<float> Damaged;
         public event Action<float, float> HealthChanged;
         public event Action Depleted;
 
         public float CurrentHealth => _currentHealth;
         public float MaximumHealth => _maximumHealth;
         public float NormalizedHealth => _maximumHealth > 0f ? _currentHealth / _maximumHealth : 0f;
+        public bool IsDamageInvulnerable => _damageInvulnerabilityRemaining > 0f;
 
         private void Awake()
         {
@@ -27,6 +31,10 @@ namespace CatMouse.Game.Player
 
         private void Update()
         {
+            _damageInvulnerabilityRemaining = Mathf.Max(
+                0f,
+                _damageInvulnerabilityRemaining - Time.deltaTime);
+
             if (!Application.isPlaying || _isDepleted || _drainPerSecond <= 0f)
             {
                 return;
@@ -39,6 +47,7 @@ namespace CatMouse.Game.Player
         {
             _maximumHealth = Mathf.Max(1f, _maximumHealth);
             _drainPerSecond = Mathf.Max(0f, _drainPerSecond);
+            _damageInvulnerabilityDuration = Mathf.Max(0f, _damageInvulnerabilityDuration);
             _currentHealth = Mathf.Clamp(_currentHealth, 0f, _maximumHealth);
         }
 
@@ -54,12 +63,20 @@ namespace CatMouse.Game.Player
 
         public void TakeDamage(float amount)
         {
-            if (amount <= 0f || _isDepleted)
+            TryTakeDamage(amount);
+        }
+
+        public bool TryTakeDamage(float amount)
+        {
+            if (amount <= 0f || _isDepleted || IsDamageInvulnerable)
             {
-                return;
+                return false;
             }
 
+            _damageInvulnerabilityRemaining = _damageInvulnerabilityDuration;
             Consume(amount);
+            Damaged?.Invoke(amount);
+            return true;
         }
 
         private void Consume(float amount)
