@@ -51,7 +51,7 @@ namespace CatMouse.Game.Editor
         private const string LobbyTmpFontAssetPath = LobbyTmpFontFolderPath + "/NEXONLv1GothicRegular_TMP.asset";
         private const string LobbyTmpBoldFontAssetPath = LobbyTmpFontFolderPath + "/NEXONLv1GothicBold_TMP.asset";
         private const string LobbyTmpDisplayFontAssetPath = LobbyTmpFontFolderPath + "/NEXONKartGothicExtraBold_TMP.asset";
-        private const string LobbyFontCharacters = "치즈영구강화장비착용설정게임시작도토리단련앞발질주탐험모자갑옷태엽신발단단한껍질수납주머니걸음공격력속도전진획득한다음런의기본능력치를올립니다최대중닫기마스터볼륨없음배경캐릭터무대작업공통영역콘텐츠행";
+        private const string LobbyFontCharacters = "코인영구강화장비착용설정게임시작도토리단련앞발질주탐험모자갑옷태엽신발단단한껍질수납주머니걸음공격력속도전진획득한다음런의기본능력치를올립니다최대중닫기마스터볼륨없음배경캐릭터무대작업공통영역콘텐츠행";
         private const string LobbyModulePrefabFolderPath = "Assets/_Project/Prefabs/UI/Lobby/Modules";
         private const string LobbyStagePrefabPath = LobbyModulePrefabFolderPath + "/Stage/LobbyStage.prefab";
         private const string LobbyNavigationPrefabPath = LobbyModulePrefabFolderPath + "/Navigation/LobbyNavigation.prefab";
@@ -126,9 +126,9 @@ namespace CatMouse.Game.Editor
             RemoveLobbyModule(stageGroup, LobbyStageModuleName);
             GameObject stage = InstantiateLobbyModule(LobbyStagePrefabPath, stageGroup);
             stage.transform.SetSiblingIndex(0);
-            TMP_Text cheeseLabel = RequireComponent<TMP_Text>(stage.transform, "CurrencyChip/CheeseLabel");
+            TMP_Text coinLabel = RequireComponent<TMP_Text>(stage.transform, "CurrencyChip/CoinLabel");
             Button startButton = RequireComponent<Button>(stage.transform, "StartButton");
-            ConfigureLobbyStageController(controller, cheeseLabel, startButton);
+            ConfigureLobbyStageController(controller, coinLabel, startButton);
             SaveLobbyScene(scene);
         }
 
@@ -187,8 +187,8 @@ namespace CatMouse.Game.Editor
             panel.transform.SetSiblingIndex(1);
             panel.SetActive(false);
             int equipmentSlotCount = GetMaximumEquipmentSlotCount(catalog);
-            ResolveEquipmentPanelBindings(panel, equipmentSlotCount, out Button closeButton, out Button[] slotButtons, out Image[] rows, out Image[] icons, out TMP_Text[] names, out TMP_Text[] descriptions, out TMP_Text equippedLabel, out TMP_Text[] buttonLabels, out Button[] buttons);
-            ConfigureLobbyEquipmentPanelController(controller, catalog, panel, closeButton, slotButtons, rows, icons, names, descriptions, equippedLabel, buttonLabels, buttons);
+            ResolveEquipmentPanelBindings(panel, equipmentSlotCount, out Button closeButton, out Button[] slotButtons, out Image[] rows, out Image[] icons, out TMP_Text[] names, out TMP_Text[] descriptions, out TMP_Text[] buttonLabels, out Button[] buttons);
+            ConfigureLobbyEquipmentPanelController(controller, catalog, panel, closeButton, slotButtons, rows, icons, names, descriptions, buttonLabels, buttons);
             SaveLobbyScene(scene);
         }
 
@@ -366,19 +366,19 @@ namespace CatMouse.Game.Editor
             equipmentPanel.SetActive(false);
             settingsPanel.SetActive(false);
 
-            TMP_Text cheeseLabel = RequireComponent<TMP_Text>(stage.transform, "CurrencyChip/CheeseLabel");
+            TMP_Text coinLabel = RequireComponent<TMP_Text>(stage.transform, "CurrencyChip/CoinLabel");
             Button startButton = RequireComponent<Button>(stage.transform, "StartButton");
             Button upgradeMenuButton = RequireComponent<Button>(navigation.transform, "UpgradeMenuButton");
             Button equipmentMenuButton = RequireComponent<Button>(navigation.transform, "EquipmentMenuButton");
             Button settingsButton = RequireComponent<Button>(navigation.transform, "SettingsButton");
             ResolveUpgradePanelBindings(upgradePanel, catalog.Upgrades.Count, out Button closeUpgradeButton, out Image[] upgradeIcons, out TMP_Text[] upgradeNames, out TMP_Text[] upgradeDescriptions, out TMP_Text[] upgradeLevels, out TMP_Text[] upgradeButtonLabels, out Button[] upgradeButtons);
             int equipmentSlotCount = GetMaximumEquipmentSlotCount(catalog);
-            ResolveEquipmentPanelBindings(equipmentPanel, equipmentSlotCount, out Button closeEquipmentButton, out Button[] equipmentSlotButtons, out Image[] equipmentRows, out Image[] equipmentIcons, out TMP_Text[] equipmentNames, out TMP_Text[] equipmentDescriptions, out TMP_Text equippedLabel, out TMP_Text[] equipmentButtonLabels, out Button[] equipmentButtons);
+            ResolveEquipmentPanelBindings(equipmentPanel, equipmentSlotCount, out Button closeEquipmentButton, out Button[] equipmentSlotButtons, out Image[] equipmentRows, out Image[] equipmentIcons, out TMP_Text[] equipmentNames, out TMP_Text[] equipmentDescriptions, out TMP_Text[] equipmentButtonLabels, out Button[] equipmentButtons);
             ResolveSettingsPanelBindings(settingsPanel, out Slider masterVolumeSlider, out TMP_Text masterVolumeLabel, out Button closeSettingsButton);
 
             ConfigureLobbyController(
                 controller,
-                cheeseLabel,
+                coinLabel,
                 upgradeIcons,
                 upgradeNames,
                 upgradeDescriptions,
@@ -389,7 +389,6 @@ namespace CatMouse.Game.Editor
                 equipmentIcons,
                 equipmentNames,
                 equipmentDescriptions,
-                equippedLabel,
                 equipmentButtonLabels,
                 equipmentButtons,
                 equipmentSlotButtons,
@@ -736,7 +735,6 @@ namespace CatMouse.Game.Editor
             out Image[] icons,
             out TMP_Text[] names,
             out TMP_Text[] descriptions,
-            out TMP_Text equippedLabel,
             out TMP_Text[] buttonLabels,
             out Button[] buttons)
         {
@@ -748,7 +746,6 @@ namespace CatMouse.Game.Editor
                 RequireComponent<Button>(drawer, "SlotTabs/ArmorButton"),
                 RequireComponent<Button>(drawer, "SlotTabs/ShoesButton"),
             };
-            equippedLabel = RequireComponent<TMP_Text>(drawer, "Equipped");
             rows = new Image[itemCount];
             icons = new Image[itemCount];
             names = new TMP_Text[itemCount];
@@ -1050,7 +1047,7 @@ namespace CatMouse.Game.Editor
             Image chipImage = chip.AddComponent<Image>();
             ApplySlicedSprite(chipImage, CurrencyChipSpritePath, CurrencyChipSpriteBorder);
 
-            TMP_Text label = CreateText("CheeseLabel", chip.transform, "치즈 120", 32, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, new Color(0.24f, 0.14f, 0.1f, 1f));
+            TMP_Text label = CreateText("CoinLabel", chip.transform, "코인 120", 32, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, new Color(0.24f, 0.14f, 0.1f, 1f));
             ApplyLobbyButtonLabelStyle(label, 32, new Color(0.24f, 0.14f, 0.1f, 1f));
             return label;
         }
@@ -1216,7 +1213,7 @@ namespace CatMouse.Game.Editor
             panel = CreateSidePanel("UpgradePanel", parent);
             GameObject drawer = CreateDrawer("UpgradeDrawer", panel.transform, layout);
             CreateText("Header", drawer.transform, "영구 강화", 40, TextAnchor.MiddleCenter, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), layout.PanelHeaderSize, layout.PanelHeaderPosition, new Color(0.24f, 0.14f, 0.1f, 1f));
-            CreateText("Guide", drawer.transform, "획득한 치즈로 다음 런의 기본 능력치를 올립니다.", 20, TextAnchor.MiddleCenter, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), layout.PanelSecondaryTextSize, layout.PanelSecondaryTextPosition, new Color(0.43f, 0.29f, 0.21f, 1f));
+            CreateText("Guide", drawer.transform, "획득한 코인으로 다음 런의 기본 능력치를 올립니다.", 20, TextAnchor.MiddleCenter, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), layout.PanelSecondaryTextSize, layout.PanelSecondaryTextPosition, new Color(0.43f, 0.29f, 0.21f, 1f));
             closeButton = CreateButton("CloseButton", drawer.transform, "닫기", new Vector2(1f, 1f), new Vector2(1f, 1f), layout.SidePanelCloseButtonSize, layout.SidePanelCloseButtonPosition, new Color(0.61f, 0.43f, 0.29f, 1f), 20, out _, SecondaryButtonSpritePath);
 
             icons = new Image[definitions.Count];
@@ -1252,14 +1249,12 @@ namespace CatMouse.Game.Editor
             out Image[] icons,
             out TMP_Text[] nameLabels,
             out TMP_Text[] descriptionLabels,
-            out TMP_Text equippedLabel,
             out TMP_Text[] buttonLabels,
             out Button[] buttons)
         {
             panel = CreateSidePanel("EquipmentPanel", parent);
             GameObject drawer = CreateDrawer("EquipmentDrawer", panel.transform, layout);
             CreateText("Header", drawer.transform, "장비 착용", 40, TextAnchor.MiddleCenter, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), layout.PanelHeaderSize, layout.PanelHeaderPosition, new Color(0.16f, 0.25f, 0.15f, 1f));
-            equippedLabel = CreateText("Equipped", drawer.transform, "장착: 없음", 20, TextAnchor.MiddleCenter, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), layout.PanelSecondaryTextSize, layout.PanelSecondaryTextPosition, new Color(0.28f, 0.42f, 0.25f, 1f));
             closeButton = CreateButton("CloseButton", drawer.transform, "닫기", new Vector2(1f, 1f), new Vector2(1f, 1f), layout.SidePanelCloseButtonSize, layout.SidePanelCloseButtonPosition, new Color(0.35f, 0.5f, 0.3f, 1f), 20, out _, SecondaryButtonSpritePath);
 
             rowBackgrounds = new Image[definitions.Count];
@@ -1313,7 +1308,7 @@ namespace CatMouse.Game.Editor
 
         private static void ConfigureLobbyController(
             LobbySceneController controller,
-            TMP_Text cheeseLabel,
+            TMP_Text coinLabel,
             Image[] upgradeIcons,
             TMP_Text[] upgradeNames,
             TMP_Text[] upgradeDescriptions,
@@ -1324,7 +1319,6 @@ namespace CatMouse.Game.Editor
             Image[] equipmentIcons,
             TMP_Text[] equipmentNames,
             TMP_Text[] equipmentDescriptions,
-            TMP_Text equippedLabel,
             TMP_Text[] equipmentButtonLabels,
             Button[] equipmentButtons,
             Button[] equipmentSlotButtons,
@@ -1342,10 +1336,8 @@ namespace CatMouse.Game.Editor
             Button closeSettingsButton)
         {
             SerializedObject serializedController = new(controller);
-            serializedController.FindProperty("_runtimeKoreanBoldFont").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Font>(LobbyBoldFontPath);
-            SetObjectReferences(serializedController.FindProperty("_runtimeFontReplacementTargets"), new[] { LoadLobbyBoldFont(), LoadLobbyDisplayFont() });
             serializedController.FindProperty("_catalog").objectReferenceValue = AssetDatabase.LoadAssetAtPath<MetaProgressionCatalog>(MetaCatalogAssetPath);
-            serializedController.FindProperty("_cheeseLabel").objectReferenceValue = cheeseLabel;
+            serializedController.FindProperty("_coinLabel").objectReferenceValue = coinLabel;
             SetObjectReferences(serializedController.FindProperty("_upgradeIcons"), upgradeIcons);
             SetObjectReferences(serializedController.FindProperty("_upgradeNameLabels"), upgradeNames);
             SetObjectReferences(serializedController.FindProperty("_upgradeDescriptionLabels"), upgradeDescriptions);
@@ -1358,7 +1350,6 @@ namespace CatMouse.Game.Editor
             SetObjectReferences(serializedController.FindProperty("_equipmentIcons"), equipmentIcons);
             SetObjectReferences(serializedController.FindProperty("_equipmentNameLabels"), equipmentNames);
             SetObjectReferences(serializedController.FindProperty("_equipmentDescriptionLabels"), equipmentDescriptions);
-            serializedController.FindProperty("_equippedEquipmentLabel").objectReferenceValue = equippedLabel;
             SetObjectReferences(serializedController.FindProperty("_equipmentButtonLabels"), equipmentButtonLabels);
             SetObjectReferences(serializedController.FindProperty("_equipmentButtons"), equipmentButtons);
             SetObjectReferences(serializedController.FindProperty("_equipmentSlotButtons"), equipmentSlotButtons);
@@ -1380,11 +1371,11 @@ namespace CatMouse.Game.Editor
 
         private static void ConfigureLobbyStageController(
             LobbySceneController controller,
-            TMP_Text cheeseLabel,
+            TMP_Text coinLabel,
             Button startButton)
         {
             SerializedObject serializedController = new(controller);
-            serializedController.FindProperty("_cheeseLabel").objectReferenceValue = cheeseLabel;
+            serializedController.FindProperty("_coinLabel").objectReferenceValue = coinLabel;
             serializedController.FindProperty("_startButton").objectReferenceValue = startButton;
             serializedController.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(controller);
@@ -1440,7 +1431,6 @@ namespace CatMouse.Game.Editor
             Image[] icons,
             TMP_Text[] names,
             TMP_Text[] descriptions,
-            TMP_Text equippedLabel,
             TMP_Text[] buttonLabels,
             Button[] buttons)
         {
@@ -1453,7 +1443,6 @@ namespace CatMouse.Game.Editor
             SetObjectReferences(serializedController.FindProperty("_equipmentIcons"), icons);
             SetObjectReferences(serializedController.FindProperty("_equipmentNameLabels"), names);
             SetObjectReferences(serializedController.FindProperty("_equipmentDescriptionLabels"), descriptions);
-            serializedController.FindProperty("_equippedEquipmentLabel").objectReferenceValue = equippedLabel;
             SetObjectReferences(serializedController.FindProperty("_equipmentButtonLabels"), buttonLabels);
             SetObjectReferences(serializedController.FindProperty("_equipmentButtons"), buttons);
             serializedController.ApplyModifiedPropertiesWithoutUndo();

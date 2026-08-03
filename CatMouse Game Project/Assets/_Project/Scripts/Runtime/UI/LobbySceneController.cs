@@ -13,9 +13,7 @@ namespace CatMouse.Game.UI
         [Header("Lobby")]
         [SerializeField] private string _gameSceneName = "GameScene";
         [SerializeField] private MetaProgressionCatalog _catalog;
-        [SerializeField] private Font _runtimeKoreanBoldFont;
-        [SerializeField] private TMP_FontAsset[] _runtimeFontReplacementTargets;
-        [SerializeField] private TMP_Text _cheeseLabel;
+        [SerializeField] private TMP_Text _coinLabel;
         [SerializeField] private Image[] _upgradeIcons;
         [SerializeField] private TMP_Text[] _upgradeNameLabels;
         [SerializeField] private TMP_Text[] _upgradeDescriptionLabels;
@@ -28,7 +26,6 @@ namespace CatMouse.Game.UI
         [SerializeField] private Image[] _equipmentIcons;
         [SerializeField] private TMP_Text[] _equipmentNameLabels;
         [SerializeField] private TMP_Text[] _equipmentDescriptionLabels;
-        [SerializeField] private TMP_Text _equippedEquipmentLabel;
         [SerializeField] private TMP_Text[] _equipmentButtonLabels;
         [SerializeField] private Button[] _equipmentButtons;
         [SerializeField] private Button[] _equipmentSlotButtons;
@@ -53,7 +50,6 @@ namespace CatMouse.Game.UI
 
         private void Awake()
         {
-            ApplyRuntimeKoreanFont();
             MetaProgressionService.Initialize(_catalog);
             MetaProgressionService.ApplySettings();
             BindButtons();
@@ -121,40 +117,6 @@ namespace CatMouse.Game.UI
             _closeEquipmentButton?.onClick.AddListener(HideAllPanels);
             _closeSettingsButton?.onClick.AddListener(HideSettings);
             _masterVolumeSlider?.onValueChanged.AddListener(SetMasterVolume);
-        }
-
-        private void ApplyRuntimeKoreanFont()
-        {
-            if (_runtimeKoreanBoldFont == null || _runtimeFontReplacementTargets == null)
-            {
-                return;
-            }
-
-            TMP_FontAsset runtimeFont = TMP_FontAsset.CreateFontAsset(_runtimeKoreanBoldFont);
-            runtimeFont.atlasPopulationMode = AtlasPopulationMode.Dynamic;
-
-            TMP_Text[] texts = GetComponentsInChildren<TMP_Text>(true);
-            for (int index = 0; index < texts.Length; index++)
-            {
-                TMP_Text text = texts[index];
-                if (text != null && IsRuntimeFontReplacementTarget(text.font))
-                {
-                    text.font = runtimeFont;
-                }
-            }
-        }
-
-        private bool IsRuntimeFontReplacementTarget(TMP_FontAsset fontAsset)
-        {
-            for (int index = 0; index < _runtimeFontReplacementTargets.Length; index++)
-            {
-                if (_runtimeFontReplacementTargets[index] == fontAsset)
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         private void PurchaseUpgrade(string upgradeId)
@@ -230,9 +192,9 @@ namespace CatMouse.Game.UI
 
         private void Refresh()
         {
-            if (_cheeseLabel != null)
+            if (_coinLabel != null)
             {
-                _cheeseLabel.text = $"코인 {MetaProgressionService.CoinBalance}";
+                _coinLabel.text = $"코인 {MetaProgressionService.CoinBalance}";
             }
 
             RefreshUpgrades();
@@ -277,19 +239,10 @@ namespace CatMouse.Game.UI
 
         private void RefreshEquipment()
         {
-            if (_equippedEquipmentLabel != null)
-            {
-                _equippedEquipmentLabel.text = BuildEquippedEquipmentLabel();
-            }
-
             for (int index = 0; index < _equipmentButtons.Length; index++)
             {
                 MetaEquipmentDefinition definition = GetEquipmentDefinition(_activeEquipmentSlot, index);
                 RunItemDefinition item = definition?.RunItem;
-                if (index < _equipmentRowBackgrounds.Length && _equipmentRowBackgrounds[index] != null)
-                {
-                    _equipmentRowBackgrounds[index].gameObject.SetActive(definition != null);
-                }
 
                 if (definition == null)
                 {
@@ -338,17 +291,6 @@ namespace CatMouse.Game.UI
                     image.color = isSelected ? Color.white : new Color(1f, 1f, 1f, 0.68f);
                 }
             }
-        }
-
-        private string BuildEquippedEquipmentLabel()
-        {
-            return $"장착 슬롯 · 모자: {GetEquippedEquipmentName(MetaEquipmentSlot.Hat)} · 갑옷: {GetEquippedEquipmentName(MetaEquipmentSlot.Armor)} · 신발: {GetEquippedEquipmentName(MetaEquipmentSlot.Shoes)}";
-        }
-
-        private string GetEquippedEquipmentName(MetaEquipmentSlot slot)
-        {
-            string equippedId = MetaProgressionService.GetEquippedEquipmentId(slot);
-            return _catalog?.FindEquipment(slot, equippedId)?.RunItem?.DisplayName ?? "없음";
         }
 
         private void RefreshMasterVolume()

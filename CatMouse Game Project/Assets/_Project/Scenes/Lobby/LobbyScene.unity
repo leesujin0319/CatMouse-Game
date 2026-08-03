@@ -365,11 +365,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.UI.LobbySceneController
   _gameSceneName: GameScene
   _catalog: {fileID: 11400000, guid: b504f5cfc8655ed449157fe5d237edda, type: 2}
-  _runtimeKoreanBoldFont: {fileID: 12800000, guid: d72b0a2eb4af2f848a2fa2a9d3795557, type: 3}
-  _runtimeFontReplacementTargets:
-  - {fileID: 11400000, guid: ef1a990578ed9794ca3967e9bbd17c05, type: 2}
-  - {fileID: 11400000, guid: c4dbbb8cd2aabfe4d9d695c46463c8d7, type: 2}
-  _cheeseLabel: {fileID: 244845959}
+  _coinLabel: {fileID: 244845959}
   _upgradeIcons:
   - {fileID: 850762649}
   - {fileID: 850762648}
@@ -420,7 +416,6 @@ MonoBehaviour:
   _equipmentDescriptionLabels:
   - {fileID: 1491849748}
   - {fileID: 1491849747}
-  _equippedEquipmentLabel: {fileID: 1491849746}
   _equipmentButtonLabels:
   - {fileID: 1491849745}
   - {fileID: 1491849744}
@@ -2543,17 +2538,6 @@ MonoBehaviour:
 --- !u!114 &1491849745 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 1773199023480778289, guid: 2967f3e737fdbff4e96354e7a968b851, type: 3}
-  m_PrefabInstance: {fileID: 1491849735}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
---- !u!114 &1491849746 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8440668869028219167, guid: 2967f3e737fdbff4e96354e7a968b851, type: 3}
   m_PrefabInstance: {fileID: 1491849735}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}

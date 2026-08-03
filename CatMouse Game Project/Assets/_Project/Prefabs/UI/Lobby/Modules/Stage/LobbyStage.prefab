@@ -162,7 +162,7 @@ GameObject:
   - component: {fileID: 329322050227777789}
   - component: {fileID: 1090551462568517673}
   m_Layer: 0
-  m_Name: CheeseLabel
+  m_Name: CoinLabel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -215,7 +215,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uCE58\uC988 120"
+  m_text: "\uCF54\uC778 120"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ef1a990578ed9794ca3967e9bbd17c05, type: 2}
   m_sharedMaterial: {fileID: -7236043982958003004, guid: ef1a990578ed9794ca3967e9bbd17c05, type: 2}
@@ -576,7 +576,7 @@ MonoBehaviour:
     _pivot: {x: 0.5, y: 0.5}
     _anchoredPosition: {x: 208, y: -80}
     _sizeDelta: {x: 280, y: 72}
-  - _path: CurrencyChip/CheeseLabel
+  - _path: CurrencyChip/CoinLabel
     _target: {fileID: 4128483277664441447}
     _anchorMin: {x: 0, y: 0}
     _anchorMax: {x: 1, y: 1}
