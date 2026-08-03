@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4bbd48a5d45dbc543bacda4233a9c9e6, type: 3}
+  m_Name: MetaProgressionCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.Meta.MetaProgressionCatalog
+  _upgrades:
+  - _id: attack_damage
+    _runItem: {fileID: 11400000, guid: 6cb7523faa1009244b3ac8479b4d61e3, type: 2}
+    _maximumLevel: 5
+    _baseCheeseCost: 20
+    _cheeseCostIncrease: 20
+  - _id: attack_speed
+    _runItem: {fileID: 11400000, guid: 6d3e2362a45ec3a40af8b922a77f5548, type: 2}
+    _maximumLevel: 5
+    _baseCheeseCost: 25
+    _cheeseCostIncrease: 25
+  - _id: forward_speed
+    _runItem: {fileID: 11400000, guid: 5b1257d8d65e8704296dcc0665795ba5, type: 2}
+    _maximumLevel: 5
+    _baseCheeseCost: 15
+    _cheeseCostIncrease: 15
+  - _id: projectile_speed
+    _runItem: {fileID: 11400000, guid: 6e7c8973beb0cf24bb1df0cc9c326000, type: 2}
+    _maximumLevel: 5
+    _baseCheeseCost: 20
+    _cheeseCostIncrease: 20
+  - _id: attack_range
+    _runItem: {fileID: 11400000, guid: 049ddf5e0131868408e8104fece934b6, type: 2}
+    _maximumLevel: 5
+    _baseCheeseCost: 20
+    _cheeseCostIncrease: 20
+  _equipment:
+  - _id: pantry_cap
+    _slot: 0
+    _runItem: {fileID: 11400000, guid: a3caf90d62e91134a8a314650eb4c9f7, type: 2}
+  - _id: acorn_armor
+    _slot: 1
+    _runItem: {fileID: 11400000, guid: 0502516db8f862b40b1dad8f8721f26d, type: 2}
+  - _id: windup_shoes
+    _slot: 2
+    _runItem: {fileID: 11400000, guid: 1b9bb5dbc05e90345836429b5e09b506, type: 2}
+  - _id: scout_cap
+    _slot: 0
+    _runItem: {fileID: 11400000, guid: 483365b8830f5694dbed1325cbfebf30, type: 2}
+  - _id: hardened_shell
+    _slot: 1
+    _runItem: {fileID: 11400000, guid: da561f8202d6a6745b282702c67bc1f8, type: 2}
+  - _id: spring_boots
+    _slot: 2
+    _runItem: {fileID: 11400000, guid: 10005ac2c57a8f747ad4bf54089ec795, type: 2}

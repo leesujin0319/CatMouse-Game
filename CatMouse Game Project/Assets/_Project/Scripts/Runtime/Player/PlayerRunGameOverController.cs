@@ -1,3 +1,5 @@
+using System;
+using CatMouse.Game.Meta;
 using CatMouse.Game.Run;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -20,10 +22,13 @@ namespace CatMouse.Game.Player
         [SerializeField] private Button _retryButton;
 
         private bool _isGameOver;
+        private bool _hasAppliedCoinReward;
         private float _timeScaleBeforeGameOver = 1f;
+        private string _runId;
 
         private void Awake()
         {
+            _runId = Guid.NewGuid().ToString("N");
             _gameOverPanel?.SetActive(false);
 
             if (_retryButton != null)
@@ -70,17 +75,30 @@ namespace CatMouse.Game.Player
 
             _isGameOver = true;
             _timeScaleBeforeGameOver = Time.timeScale;
+            ApplyCoinReward();
             RefreshResult();
             Time.timeScale = 0f;
             _gameOverPanel?.transform.SetAsLastSibling();
             _gameOverPanel?.SetActive(true);
         }
 
+        private void ApplyCoinReward()
+        {
+            if (_hasAppliedCoinReward)
+            {
+                return;
+            }
+
+            _hasAppliedCoinReward = true;
+            int collectedCoinCount = GetCollectedCoinCount();
+            MetaProgressionService.TryApplyRunResult(new RunResult(_runId, collectedCoinCount));
+        }
+
         private void RefreshResult()
         {
             int distanceMeters = Mathf.FloorToInt(Mathf.Max(0f, _runProgress != null ? _runProgress.DistanceMeters : 0f));
             int nextGoalDistanceMeters = ((distanceMeters / GoalDistanceStepMeters) + 1) * GoalDistanceStepMeters;
-            int collectedCoinCount = _runCoinCollector != null ? _runCoinCollector.CollectedCoinCount : 0;
+            int collectedCoinCount = GetCollectedCoinCount();
 
             if (_distanceValueLabel != null)
             {
@@ -107,6 +125,12 @@ namespace CatMouse.Game.Player
 
             Time.timeScale = _timeScaleBeforeGameOver;
             _isGameOver = false;
+        }
+
+        private int GetCollectedCoinCount()
+        {
+            _runCoinCollector ??= FindFirstObjectByType<RunCoinCollector>();
+            return _runCoinCollector != null ? _runCoinCollector.CollectedCoinCount : 0;
         }
     }
 }

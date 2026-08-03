@@ -18,6 +18,9 @@
 - [`graphify-excluded/technical-foundation/README.md`](graphify-excluded/technical-foundation/README.md): 원문 출처, 문서 구성, 공개 전 확인 사항
 - [`graphify-excluded/technical-foundation/mvp-architecture-v0.1.md`](graphify-excluded/technical-foundation/mvp-architecture-v0.1.md): 현재 Unity 프로젝트에서 바로 따를 MVP 설계 기준
 - [`graphify-excluded/technical-foundation/code-conventions-v0.1.md`](graphify-excluded/technical-foundation/code-conventions-v0.1.md): Unity C# 구현·데이터·이벤트·카메라·저장 코드 규칙
+- [`meta-progression-handoff.md`](meta-progression-handoff.md): 로비 강화·장비와 인게임 런 스탯·결과 보상을 연결하는 계약
+- [`conventions/lobby-layout.md`](conventions/lobby-layout.md): 1920×1080 기준 로비·드로어·메타 슬롯 배치 기준
+- [`conventions/ui-structure.md`](conventions/ui-structure.md): 로비 UI 자산·프리팹·9-Slice·한글 텍스트 구조 규칙
 - `graphify-excluded/technical-foundation/reference/`: 제공된 Unity 기술 설계 원문 10종. 원문은 참고용이며, 실제 구현 결정은 MVP 아키텍처 문서가 우선합니다.
 
 ## 협업 컨벤션
@@ -30,3 +33,4 @@
 - [`gameplay-size-standard-v0.1.md`](gameplay-size-standard-v0.1.md): 맵·카메라·캐릭터·적·투사체·드롭 아이템의 월드 유닛 크기 기준
 - [`asset-production/endless-background-asset-rules.md`](asset-production/endless-background-asset-rules.md): 원경·바닥·근경 수평 심리스 에셋 제작 규칙
 - [`asset-production/ai-generated-character-assets.md`](asset-production/ai-generated-character-assets.md): AI 생성 캐릭터 에셋 제작·임포트 규칙
+- [`asset-production/ai-generated-lobby-assets.md`](asset-production/ai-generated-lobby-assets.md): 로비 배경·기능·메타 성장·장비 UI 이미지의 AI 생성·출처·임포트 기록

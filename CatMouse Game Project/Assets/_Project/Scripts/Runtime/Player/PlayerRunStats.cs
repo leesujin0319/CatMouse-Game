@@ -12,6 +12,7 @@ namespace CatMouse.Game.Player
 
         [SerializeField] private PlayerBaseStatsDefinition _baseStatsDefinition;
 
+        private readonly Dictionary<RunItemDefinition, int> _persistentItemStacks = new();
         private readonly Dictionary<RunItemDefinition, int> _itemStacks = new();
         private readonly Dictionary<RunItemDefinition, int> _temporaryItemStacks = new();
         private readonly Dictionary<RunItemDefinition, float> _temporaryItemStrengths = new();
@@ -29,6 +30,7 @@ namespace CatMouse.Game.Player
         public void Initialize(PlayerBaseStatsDefinition baseStatsDefinition)
         {
             _baseStatsDefinition = baseStatsDefinition;
+            _persistentItemStacks.Clear();
             _itemStacks.Clear();
             _temporaryItemStacks.Clear();
             _temporaryItemStrengths.Clear();
@@ -63,6 +65,50 @@ namespace CatMouse.Game.Player
             return itemDefinition != null && _itemStacks.TryGetValue(itemDefinition, out int stacks)
                 ? stacks
                 : 0;
+        }
+
+        public int GetPersistentStackCount(RunItemDefinition itemDefinition)
+        {
+            return itemDefinition != null && _persistentItemStacks.TryGetValue(itemDefinition, out int stacks)
+                ? stacks
+                : 0;
+        }
+
+        public void SetPersistentStackCount(RunItemDefinition itemDefinition, int stackCount)
+        {
+            if (!IsInitialized || itemDefinition == null)
+            {
+                return;
+            }
+
+            int clampedStackCount = Mathf.Clamp(stackCount, 0, itemDefinition.MaximumStacks);
+            int currentStackCount = GetPersistentStackCount(itemDefinition);
+            if (currentStackCount == clampedStackCount)
+            {
+                return;
+            }
+
+            if (clampedStackCount == 0)
+            {
+                _persistentItemStacks.Remove(itemDefinition);
+            }
+            else
+            {
+                _persistentItemStacks[itemDefinition] = clampedStackCount;
+            }
+
+            Recalculate();
+        }
+
+        public void ClearPersistentItems()
+        {
+            if (!IsInitialized || _persistentItemStacks.Count == 0)
+            {
+                return;
+            }
+
+            _persistentItemStacks.Clear();
+            Recalculate();
         }
 
         public bool TryApplyTemporary(RunItemDefinition itemDefinition)
@@ -149,6 +195,11 @@ namespace CatMouse.Game.Player
             float percentBonus = 0f;
 
             foreach (KeyValuePair<RunItemDefinition, int> itemStack in _itemStacks)
+            {
+                AddModifierValues(itemStack, statType, ref flatBonus, ref percentBonus);
+            }
+
+            foreach (KeyValuePair<RunItemDefinition, int> itemStack in _persistentItemStacks)
             {
                 AddModifierValues(itemStack, statType, ref flatBonus, ref percentBonus);
             }

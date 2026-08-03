@@ -7474,6 +7474,7 @@ GameObject:
   - component: {fileID: 1842839062}
   - component: {fileID: 1842839065}
   - component: {fileID: 1842839066}
+  - component: {fileID: 1842839067}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -7601,7 +7602,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d8e3811605a95b14b9abc97a69813b86, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.Player.PlayerRunHealth
   _maximumHealth: 100
   _drainPerSecond: 8
@@ -7757,13 +7758,27 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dd79164f146981b4797d9b254263e344, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.Player.PlayerHitFeedback
   _runHealth: {fileID: 1842839058}
   _spriteRenderer: {fileID: 1618809313}
   _duration: 0.16
   _scaleMultiplier: 1.1
   _flashColor: {r: 1, g: 0.35, b: 0.35, a: 1}
+--- !u!114 &1842839067
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1842839048}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fec661d86eedb82469de8a0b1b682280, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.Meta.MetaProgressionApplier
+  _runStats: {fileID: 1842839056}
+  _catalog: {fileID: 11400000, guid: b504f5cfc8655ed449157fe5d237edda, type: 2}
 --- !u!1 &1842911342
 GameObject:
   m_ObjectHideFlags: 0

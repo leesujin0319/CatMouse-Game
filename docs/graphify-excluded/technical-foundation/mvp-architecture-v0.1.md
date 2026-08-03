@@ -138,7 +138,7 @@ ActiveSkillRequested, ActiveSkillUsed
 ## 8. 메타 성장과 저장
 
 - 영구 성장은 장기 로드맵의 확정 시스템입니다. 이번 기반 단계에서는 `MetaProgressionService`, `SaveGateway`, 데이터 모델의 경계를 먼저 만들고, 상점·강화 화면은 코어 러닝 루프가 안정된 뒤 구현합니다.
-- `MetaProgressionState`는 `schemaVersion`, 영구 치즈 잔고, 강화 단계, 해금 상태만 보관합니다. 런 중 임시 능력·체력·쿨다운은 저장하지 않습니다.
+- `MetaProgressionState`는 `schemaVersion`, 영구 치즈 잔고, 강화 단계, 장착 장비, 최근 보상 지급 런 ID만 보관합니다. 장비 해금 상태는 획득 규칙이 확정될 때 추가하며, 런 중 임시 능력·체력·쿨다운은 저장하지 않습니다.
 - 런 종료 시 `RunSession`은 변경할 수 없는 `RunResult`를 만들고, `MetaProgressionService`가 보상 지급을 한 번만 적용한 뒤 저장을 요청합니다. 재시작·중복 종료로 보상이 두 번 지급되지 않게 `RunId` 또는 완료 플래그를 사용합니다.
 - 저장 구현은 `ISaveStore` 계약 뒤에 둡니다. 플랫폼별 저장 방식은 교체 가능해야 하며, 저장 실패 시에도 이번 판의 결과 화면과 재시작은 막지 않습니다.
 - 메타 강화는 기본 공격력, 최대 체력, 공격 속도, 치즈 획득량, 액티브 스킬 강화로 시작합니다. 각 강화의 실제 전투 수정자는 `RunSession` 시작 시점에만 적용합니다.
