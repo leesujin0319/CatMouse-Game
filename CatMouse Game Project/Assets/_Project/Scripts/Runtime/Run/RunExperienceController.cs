@@ -24,7 +24,7 @@ namespace CatMouse.Game.Run
 
         public int Level => _level;
         public float CurrentExperience => _currentExperience;
-        public float ExperienceToNextLevel => _experiencePerLevel;
+        public float ExperienceToNextLevel => _experiencePerLevel * _level;
 
         public void Configure(RunItemChoiceController itemChoiceController)
         {
@@ -58,7 +58,7 @@ namespace CatMouse.Game.Run
             float remainingExperience = amount;
             while (remainingExperience > 0f)
             {
-                float experienceNeeded = _experiencePerLevel - _currentExperience;
+                float experienceNeeded = ExperienceToNextLevel - _currentExperience;
                 if (remainingExperience < experienceNeeded)
                 {
                     _currentExperience += remainingExperience;
@@ -94,7 +94,7 @@ namespace CatMouse.Game.Run
 
         private void NotifyExperienceChanged()
         {
-            ExperienceChanged?.Invoke(_level, _currentExperience, _experiencePerLevel);
+            ExperienceChanged?.Invoke(_level, _currentExperience, ExperienceToNextLevel);
         }
     }
 }

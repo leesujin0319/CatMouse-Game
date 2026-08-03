@@ -9,5 +9,6 @@ namespace CatMouse.Game.Run
         InstantBurst,
         PoisonProjectile,
         CheeseMagnet,
+        HealthLossReduction,
     }
 }

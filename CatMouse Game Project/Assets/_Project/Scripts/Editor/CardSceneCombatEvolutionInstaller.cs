@@ -24,9 +24,16 @@ namespace CatMouse.Game.Editor
             PlayerSceneAutoAttack autoAttack = Object.FindFirstObjectByType<PlayerSceneAutoAttack>();
             RunItemChoiceController choiceController = Object.FindFirstObjectByType<RunItemChoiceController>();
             PrototypeEnemySpawner enemySpawner = Object.FindFirstObjectByType<PrototypeEnemySpawner>();
+            PlayerRunHealth runHealth = runStats != null ? runStats.GetComponent<PlayerRunHealth>() : null;
             if (runStats == null || autoAttack == null || choiceController == null || enemySpawner == null)
             {
                 Debug.LogError("[CardSceneCombatEvolutionInstaller] CardScene\uC5D0 \uD544\uC694\uD55C \uCEF4\uD3EC\uB10C\uD2B8\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.");
+                return;
+            }
+
+            if (runHealth == null)
+            {
+                Debug.LogError("[CardSceneCombatEvolutionInstaller] PlayerRunHealth\uB97C \uCC3E\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.");
                 return;
             }
 
@@ -38,11 +45,13 @@ namespace CatMouse.Game.Editor
 
             RunItemDefinition[] combatItems = CreateCombatItems();
             ConfigureCombatEvolution(combatEvolution, enemySpawner);
+            ConfigureHealth(runHealth, combatEvolution);
             ConfigureAutoAttack(autoAttack, combatEvolution);
             ConfigureChoiceController(choiceController, combatEvolution, combatItems);
             ConfigureEnemyTemplate(enemySpawner);
 
             EditorUtility.SetDirty(combatEvolution);
+            EditorUtility.SetDirty(runHealth);
             EditorUtility.SetDirty(autoAttack);
             EditorUtility.SetDirty(choiceController);
             EditorUtility.SetDirty(enemySpawner);
@@ -66,6 +75,7 @@ namespace CatMouse.Game.Editor
                 CreateOrUpdateItem("RunItem_ChestnutBurst", "\uBC24\uC1A1\uC774 \uD3ED\uBC1C", "\uC120\uD0DD \uC989\uC2DC \uC8FC\uBCC0 \uC801\uC5D0\uAC8C \uD53C\uD574\uB97C \uC90D\uB2C8\uB2E4.", 1, RunCombatEffectType.InstantBurst),
                 CreateOrUpdateItem("RunItem_ToxicAcorn", "\uB3C5\uB3C4\uD1A0\uB9AC", "\uBA85\uC911\uD55C \uC801\uC5D0\uAC8C 3\uCD08 \uB3D9\uC548 \uB3C5 \uD53C\uD574\uB97C \uC90D\uB2C8\uB2E4.", 3, RunCombatEffectType.PoisonProjectile),
                 CreateOrUpdateItem("RunItem_CheeseMagnet", "\uCE58\uC988 \uC790\uC11D", "\uAC00\uAE4C\uC6B4 \uCE58\uC988\uB97C \uB04C\uC5B4\uB2F9\uACA8 \uD68D\uB4DD\uD569\uB2C8\uB2E4. \uC911\uCCA9 \uC2DC \uBC94\uC704\uC640 \uC18D\uB3C4\uAC00 \uC99D\uAC00\uD569\uB2C8\uB2E4.", 3, RunCombatEffectType.CheeseMagnet),
+                CreateOrUpdateItem("RunItem_ThickFur", "\uB450\uAED8\uC6B4 \uD138", "1\uC911\uCCA9\uB2F9 \uBC1B\uB294 \uD53C\uD574\uC640 \uC790\uC5F0 \uCCB4\uB825 \uAC10\uC18C\uAC00 20% \uC904\uC5B4\uB4ED\uB2C8\uB2E4.", 3, RunCombatEffectType.HealthLossReduction),
             };
         }
 
@@ -103,6 +113,15 @@ namespace CatMouse.Game.Editor
             SerializedObject serializedEvolution = new(combatEvolution);
             serializedEvolution.FindProperty("_enemySpawner").objectReferenceValue = enemySpawner;
             serializedEvolution.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static void ConfigureHealth(
+            PlayerRunHealth runHealth,
+            PlayerRunCombatEvolution combatEvolution)
+        {
+            SerializedObject serializedHealth = new(runHealth);
+            serializedHealth.FindProperty("_combatEvolution").objectReferenceValue = combatEvolution;
+            serializedHealth.ApplyModifiedPropertiesWithoutUndo();
         }
 
         private static void ConfigureAutoAttack(

@@ -16,6 +16,7 @@ namespace CatMouse.Game.Player
         private const float CheeseMagnetRadiusPerAdditionalStack = 0.8f;
         private const float CheeseMagnetBaseSpeed = 5f;
         private const float CheeseMagnetSpeedPerAdditionalStack = 2f;
+        private const float HealthLossReductionPerStack = 0.2f;
 
         [SerializeField] private PrototypeEnemySpawner _enemySpawner;
 
@@ -24,6 +25,7 @@ namespace CatMouse.Game.Player
         private int _homingProjectileStacks;
         private int _poisonProjectileStacks;
         private int _cheeseMagnetStacks;
+        private int _healthLossReductionStacks;
 
         public int AdditionalProjectileCount => _additionalProjectileStacks;
         public bool UsesHomingProjectile => _homingProjectileStacks > 0;
@@ -37,6 +39,7 @@ namespace CatMouse.Game.Player
         public float CheeseMagnetSpeed => _cheeseMagnetStacks > 0
             ? CheeseMagnetBaseSpeed + ((_cheeseMagnetStacks - 1) * CheeseMagnetSpeedPerAdditionalStack)
             : 0f;
+        public float HealthLossMultiplier => Mathf.Max(0.4f, 1f - (_healthLossReductionStacks * HealthLossReductionPerStack));
 
         public void Apply(RunItemDefinition itemDefinition)
         {
@@ -69,6 +72,10 @@ namespace CatMouse.Game.Player
 
                 case RunCombatEffectType.CheeseMagnet:
                     _cheeseMagnetStacks++;
+                    break;
+
+                case RunCombatEffectType.HealthLossReduction:
+                    _healthLossReductionStacks++;
                     break;
             }
         }

@@ -9,6 +9,7 @@ namespace CatMouse.Game.Player
         [SerializeField, Min(1f)] private float _maximumHealth = 100f;
         [SerializeField, Min(0f)] private float _drainPerSecond = 1f;
         [SerializeField, Min(0f)] private float _damageInvulnerabilityDuration = 0.45f;
+        [SerializeField] private PlayerRunCombatEvolution _combatEvolution;
 
         private float _currentHealth;
         private float _damageInvulnerabilityRemaining;
@@ -40,7 +41,7 @@ namespace CatMouse.Game.Player
                 return;
             }
 
-            Consume(_drainPerSecond * Time.deltaTime);
+            Consume(_drainPerSecond * GetHealthLossMultiplier() * Time.deltaTime);
         }
 
         private void OnValidate()
@@ -74,9 +75,15 @@ namespace CatMouse.Game.Player
             }
 
             _damageInvulnerabilityRemaining = _damageInvulnerabilityDuration;
-            Consume(amount);
-            Damaged?.Invoke(amount);
+            float reducedAmount = amount * GetHealthLossMultiplier();
+            Consume(reducedAmount);
+            Damaged?.Invoke(reducedAmount);
             return true;
+        }
+
+        private float GetHealthLossMultiplier()
+        {
+            return _combatEvolution != null ? _combatEvolution.HealthLossMultiplier : 1f;
         }
 
         private void Consume(float amount)
