@@ -12,11 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6da7d91529dd3ec40b249e3ab0966607, type: 3}
   m_Name: PrototypeInfiniteSpawnSchedule
   m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.Enemy.InfiniteSpawnScheduleDefinition
-  _cycleLengthMeters: 300
-  _maximumDifficultyCycles: 6
-  _cooldownReductionMeters: 2
-  _enemySpeedIncrease: 0.15
+  _metersPerDifficultyLevel: 250
+  _minimumCooldownDistanceMeters: 55
+  _cooldownReductionMeters: 5
+  _maximumEnemySpeedBonus: 0.6
+  _enemySpeedIncrease: 0.1
+  _maximumConcurrentEnemyBonus: 5
   _concurrentEnemyBonus: 1
+  _expectedPlayerPowerCurve: {fileID: 11400000, guid: d2c87cadec32f7c4d8c2ef24592a1821, type: 2}
+  _baseHealthLossMultiplier: 0.3
+  _healthLossMultiplierIncreasePerLevel: 0.06
+  _maximumHealthLossMultiplier: 0.75
   _patterns:
   - {fileID: 11400000, guid: a9f39e84acd7497469d55a90ef76207c, type: 2}
   - {fileID: 11400000, guid: 5df1bf7dab911b744a410a0bf06d9a8e, type: 2}

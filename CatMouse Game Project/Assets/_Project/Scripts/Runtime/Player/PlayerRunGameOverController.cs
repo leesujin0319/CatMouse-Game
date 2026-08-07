@@ -112,7 +112,7 @@ namespace CatMouse.Game.Player
 
             if (_coinValueLabel != null)
             {
-                _coinValueLabel.text = $"{collectedCoinCount}\uAC1C";
+                _coinValueLabel.text = $"{collectedCoinCount} C";
             }
         }
 

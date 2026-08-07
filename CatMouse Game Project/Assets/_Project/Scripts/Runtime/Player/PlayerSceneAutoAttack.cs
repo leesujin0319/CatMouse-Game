@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using CatMouse.Game.Enemy;
+using CatMouse.Game.Presentation;
 using UnityEngine;
 
 namespace CatMouse.Game.Player
@@ -17,6 +18,7 @@ namespace CatMouse.Game.Player
         [SerializeField] private PlayerRunHealth _runHealth;
         [SerializeField] private PrototypeEnemySpawner _enemySpawner;
         [SerializeField] private PlayerRunCombatEvolution _combatEvolution;
+        [SerializeField] private RunSpriteMotion _presentation;
         [SerializeField] private Transform _projectileRoot;
         [SerializeField] private PlayerSceneAcornProjectile _projectileTemplate;
 
@@ -37,6 +39,7 @@ namespace CatMouse.Game.Player
         private void Awake()
         {
             WarmPool();
+            _presentation ??= GetComponentInChildren<RunSpriteMotion>();
         }
 
         private void OnEnable()
@@ -153,6 +156,7 @@ namespace CatMouse.Game.Player
                 _projectileLifetime,
                 DefaultHitRadius,
                 _runHealth);
+            _presentation?.PlayAttack();
             _attackCooldown = 1f / stats.AttacksPerSecond;
         }
 
@@ -161,6 +165,7 @@ namespace CatMouse.Game.Player
             PlayerStatsSnapshot stats = _runStats.Current;
             int projectileCount = 1 + (_combatEvolution?.AdditionalProjectileCount ?? 0);
             float verticalSpacing = 0.18f;
+            bool firedProjectile = false;
 
             for (int index = 0; index < projectileCount; index++)
             {
@@ -191,6 +196,12 @@ namespace CatMouse.Game.Player
                     _combatEvolution?.ProjectileVisualScale ?? 1f,
                     _combatEvolution?.PoisonDamagePerTick ?? 0,
                     _combatEvolution?.PoisonDurationSeconds ?? 0f);
+                firedProjectile = true;
+            }
+
+            if (firedProjectile)
+            {
+                _presentation?.PlayAttack();
             }
 
             _attackCooldown = 1f / stats.AttacksPerSecond;

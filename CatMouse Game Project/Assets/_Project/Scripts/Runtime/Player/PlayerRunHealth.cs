@@ -1,4 +1,6 @@
 using System;
+using CatMouse.Game.Enemy;
+using CatMouse.Game.Run;
 using UnityEngine;
 
 namespace CatMouse.Game.Player
@@ -10,6 +12,8 @@ namespace CatMouse.Game.Player
         [SerializeField, Min(0f)] private float _drainPerSecond = 1f;
         [SerializeField, Min(0f)] private float _damageInvulnerabilityDuration = 0.45f;
         [SerializeField] private PlayerRunCombatEvolution _combatEvolution;
+        [SerializeField] private RunProgressController _runProgress;
+        [SerializeField] private InfiniteSpawnScheduleDefinition _spawnSchedule;
 
         private float _currentHealth;
         private float _damageInvulnerabilityRemaining;
@@ -83,7 +87,18 @@ namespace CatMouse.Game.Player
 
         private float GetHealthLossMultiplier()
         {
-            return _combatEvolution != null ? _combatEvolution.HealthLossMultiplier : 1f;
+            float combatMultiplier = _combatEvolution != null
+                ? _combatEvolution.HealthLossMultiplier
+                : 1f;
+            float difficultyMultiplier = 1f;
+
+            if (_runProgress != null && _spawnSchedule != null)
+            {
+                int difficultyLevel = _spawnSchedule.GetDifficultyLevel(_runProgress.DistanceMeters);
+                difficultyMultiplier = _spawnSchedule.GetHealthLossMultiplier(difficultyLevel);
+            }
+
+            return combatMultiplier * difficultyMultiplier;
         }
 
         private void Consume(float amount)

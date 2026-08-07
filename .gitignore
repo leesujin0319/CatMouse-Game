@@ -92,6 +92,12 @@ crashlytics-build.properties
 # Local Unity validation captures stay outside the Unity project and are not shared.
 /local-screenshots/
 
+# Local sprite-gen runs contain raw AI outputs and QA previews. Final approved runtime assets live in Assets.
+/.sprite-gen-runs/
+
 # Do not keep Graphify output or IDE solution files inside the Unity project.
 /CatMouse Game Project/graphify-out/
 *.slnx
+
+# Local source profiles for Unity editor-only balance tuning. Apply verified values to ScriptableObjects.
+/CatMouse Game Project/BalanceLocal/

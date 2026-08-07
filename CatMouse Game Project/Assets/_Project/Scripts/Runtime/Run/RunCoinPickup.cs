@@ -15,6 +15,8 @@ namespace CatMouse.Game.Run
 
         [SerializeField] private SpriteRenderer _spriteRenderer;
 
+        private Vector2 _velocity;
+        private float _deceleration;
         private float _remainingLifetime;
 
         public bool IsAvailable => !gameObject.activeSelf;
@@ -36,21 +38,34 @@ namespace CatMouse.Game.Run
             return true;
         }
 
-        public void Spawn(Vector3 position, float lifetime)
+        public void Spawn(Vector3 position, Vector2 velocity, float deceleration, float lifetime)
         {
             transform.position = position;
             transform.rotation = Quaternion.identity;
+            _velocity = velocity;
+            _deceleration = Mathf.Max(0f, deceleration);
             _remainingLifetime = Mathf.Max(0f, lifetime);
             gameObject.SetActive(true);
         }
 
-        public void Tick(float deltaTime, float leftDespawnBoundary, float worldScrollSpeed)
+        public void Tick(
+            float deltaTime,
+            float minimumY,
+            float maximumY,
+            float leftDespawnBoundary,
+            float worldScrollDelta)
         {
-            transform.position += Vector3.left * worldScrollSpeed * deltaTime;
+            transform.position += (Vector3)(_velocity * deltaTime);
+            transform.position += Vector3.left * worldScrollDelta;
+            _velocity = Vector2.MoveTowards(_velocity, Vector2.zero, _deceleration * deltaTime);
             transform.Rotate(0f, 0f, 240f * deltaTime);
             _remainingLifetime -= deltaTime;
 
-            if (_remainingLifetime <= 0f || transform.position.x < leftDespawnBoundary)
+            Vector3 position = transform.position;
+            position.y = Mathf.Clamp(position.y, minimumY, maximumY);
+            transform.position = position;
+
+            if (_remainingLifetime <= 0f || position.x < leftDespawnBoundary)
             {
                 gameObject.SetActive(false);
             }

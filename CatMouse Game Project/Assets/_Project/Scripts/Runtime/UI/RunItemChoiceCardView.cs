@@ -1,6 +1,7 @@
 using System;
 using CatMouse.Game.Player;
 using CatMouse.Game.Run;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,9 +10,9 @@ namespace CatMouse.Game.UI
     public sealed class RunItemChoiceCardView : MonoBehaviour
     {
         [SerializeField] private Button _selectButton;
-        [SerializeField] private Text _nameLabel;
-        [SerializeField] private Text _descriptionLabel;
-        [SerializeField] private Text _stackLabel;
+        [SerializeField] private TMP_Text _nameLabel;
+        [SerializeField] private TMP_Text _descriptionLabel;
+        [SerializeField] private TMP_Text _stackLabel;
 
         public void Bind(RunItemDefinition itemDefinition, PlayerRunStats runStats, Action<RunItemDefinition> onSelected)
         {

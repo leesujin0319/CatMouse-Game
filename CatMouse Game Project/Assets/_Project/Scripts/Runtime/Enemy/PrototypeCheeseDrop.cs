@@ -71,9 +71,10 @@ namespace CatMouse.Game.Enemy
             float minimumY,
             float maximumY,
             float leftDespawnBoundary,
-            float worldScrollSpeed)
+            float worldScrollDelta)
         {
-            transform.position += (Vector3)((_velocity + (Vector2.left * worldScrollSpeed)) * deltaTime);
+            transform.position += (Vector3)(_velocity * deltaTime);
+            transform.position += Vector3.left * worldScrollDelta;
             _velocity = Vector2.MoveTowards(_velocity, Vector2.zero, _deceleration * deltaTime);
             _remainingLifetime -= deltaTime;
 

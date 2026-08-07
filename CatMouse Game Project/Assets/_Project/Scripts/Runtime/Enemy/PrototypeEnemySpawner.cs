@@ -14,7 +14,9 @@ namespace CatMouse.Game.Enemy
         private const float DefaultMaximumSpawnY = 1.55f;
         private const float EnemyHitHeightOffset = 0.35f;
         private const int DefaultPoolCapacity = 12;
+        private const int DefaultEnemyProjectilePoolCapacity = 8;
         private const float ContactDamageCooldown = 1f;
+        private const int EncounterPlacementAttempts = 8;
 
         [Header("References")]
         [SerializeField] private TestRunnerController _runner;
@@ -23,8 +25,12 @@ namespace CatMouse.Game.Enemy
         [SerializeField] private Camera _worldCamera;
         [SerializeField] private Transform _enemyRoot;
         [SerializeField] private PrototypeEnemyMover _enemyTemplate;
+        [SerializeField] private Transform _enemyProjectileRoot;
+        [SerializeField] private PrototypeEnemyProjectile _enemyProjectileTemplate;
         [SerializeField] private PrototypeCheeseDropPool _cheeseDropPool;
+        [SerializeField] private RunCoinCollector _coinCollector;
         [SerializeField] private InfiniteSpawnScheduleDefinition _spawnSchedule;
+        [SerializeField] private RunVerticalBounds _verticalBounds;
 
         [Header("Spawn Area")]
         [SerializeField, Min(0f)] private float _spawnRightPadding = DefaultSpawnRightPadding;
@@ -32,27 +38,31 @@ namespace CatMouse.Game.Enemy
         [SerializeField] private float _minimumSpawnY = DefaultMinimumSpawnY;
         [SerializeField] private float _maximumSpawnY = DefaultMaximumSpawnY;
         [SerializeField, Min(1)] private int _poolCapacity = DefaultPoolCapacity;
+        [SerializeField, Min(1)] private int _enemyProjectilePoolCapacity = DefaultEnemyProjectilePoolCapacity;
 
         private readonly List<PrototypeEnemyMover> _pool = new();
+        private readonly List<PrototypeEnemyProjectile> _enemyProjectiles = new();
         private PlayerRunHealth _collectorHealth;
         private Collider2D _collectorCollider;
+        private Transform _resolvedCollector;
         private float _nextWaveDistanceMeters;
         private float _nextContactDamageTime;
 
         private void Awake()
         {
             WarmPool();
+            WarmEnemyProjectilePool();
 
-            Transform collector = _collector != null
+            _resolvedCollector = _collector != null
                 ? _collector
                 : _runner != null
                     ? _runner.transform
                     : null;
-            _collectorHealth = collector != null ? collector.GetComponent<PlayerRunHealth>() : null;
-            _collectorCollider = collector != null ? collector.GetComponent<Collider2D>() : null;
-            if (_cheeseDropPool != null && collector != null)
+            _collectorHealth = _resolvedCollector != null ? _resolvedCollector.GetComponent<PlayerRunHealth>() : null;
+            _collectorCollider = _resolvedCollector != null ? _resolvedCollector.GetComponent<Collider2D>() : null;
+            if (_cheeseDropPool != null && _resolvedCollector != null)
             {
-                _cheeseDropPool.SetCollector(collector);
+                _cheeseDropPool.SetCollector(_resolvedCollector);
             }
         }
 
@@ -72,6 +82,7 @@ namespace CatMouse.Game.Enemy
             _spawnRightPadding = Mathf.Max(0f, _spawnRightPadding);
             _despawnLeftPadding = Mathf.Max(0f, _despawnLeftPadding);
             _poolCapacity = Mathf.Max(1, _poolCapacity);
+            _enemyProjectilePoolCapacity = Mathf.Max(1, _enemyProjectilePoolCapacity);
 
             if (_minimumSpawnY > _maximumSpawnY)
             {
@@ -210,30 +221,73 @@ namespace CatMouse.Game.Enemy
             _pool.Add(enemy);
         }
 
+        private void WarmEnemyProjectilePool()
+        {
+            if (_enemyProjectileTemplate == null || _enemyProjectileRoot == null)
+            {
+                return;
+            }
+
+            _enemyProjectileTemplate.gameObject.SetActive(false);
+            _enemyProjectiles.Add(_enemyProjectileTemplate);
+
+            for (int index = 1; index < _enemyProjectilePoolCapacity; index++)
+            {
+                PrototypeEnemyProjectile projectile = Instantiate(_enemyProjectileTemplate, _enemyProjectileRoot);
+                projectile.name = $"EnemyProjectile_{index:00}";
+                projectile.gameObject.SetActive(false);
+                _enemyProjectiles.Add(projectile);
+            }
+        }
+
+        private void TickEnemyProjectiles()
+        {
+            for (int index = 0; index < _enemyProjectiles.Count; index++)
+            {
+                PrototypeEnemyProjectile projectile = _enemyProjectiles[index];
+                if (projectile != null && !projectile.IsAvailable)
+                {
+                    projectile.Tick(Time.deltaTime);
+                }
+            }
+        }
+
         private void HandleEnemyDefeated(Vector3 position, Vector2 hitDirection)
         {
+            Vector2 rewardScatterDirection = hitDirection.sqrMagnitude > Mathf.Epsilon
+                ? -hitDirection.normalized
+                : Vector2.left;
+
             if (_cheeseDropPool != null)
             {
-                _cheeseDropPool.Scatter(position, -hitDirection);
+                _cheeseDropPool.Scatter(position, rewardScatterDirection);
             }
+
+            _coinCollector?.TryDrop(position, rewardScatterDirection);
         }
 
         private void TickActiveEnemies()
         {
             var leftBoundary = _worldCamera.transform.position.x - GetHalfViewWidth() - _despawnLeftPadding;
+            var worldScrollDelta = _runProgress != null
+                ? _runProgress.CurrentWorldScrollDelta
+                : 0f;
 
             for (var index = 0; index < _pool.Count; index++)
             {
                 var enemy = _pool[index];
                 if (enemy != null && !enemy.IsAvailable)
                 {
-                    enemy.Tick(Time.deltaTime, leftBoundary);
+                    enemy.Tick(Time.deltaTime, leftBoundary, worldScrollDelta);
                     if (!enemy.IsAvailable)
                     {
                         TryDealContactDamage(enemy);
+                        TryFireRangedAttack(enemy);
                     }
                 }
             }
+
+            TickEnemyProjectiles();
         }
 
         private void TryDealContactDamage(PrototypeEnemyMover enemy)
@@ -246,7 +300,7 @@ namespace CatMouse.Game.Enemy
             }
 
             Collider2D enemyCollider = enemy.GetComponent<Collider2D>();
-            if (enemyCollider == null || !enemyCollider.bounds.Intersects(_collectorCollider.bounds))
+            if (enemyCollider == null || !enemyCollider.Distance(_collectorCollider).isOverlapped)
             {
                 return;
             }
@@ -254,7 +308,34 @@ namespace CatMouse.Game.Enemy
             if (_collectorHealth.TryTakeDamage(enemy.ContactDamage * enemy.NormalizedHealth))
             {
                 _nextContactDamageTime = Time.time + ContactDamageCooldown;
+                enemy.PlayAttackPresentation();
             }
+        }
+
+        private void TryFireRangedAttack(PrototypeEnemyMover enemy)
+        {
+            if (_resolvedCollector == null
+                || _collectorHealth == null
+                || _collectorCollider == null
+                || !enemy.UsesRangedAttack)
+            {
+                return;
+            }
+
+            PrototypeEnemyProjectile projectile = GetAvailableEnemyProjectile();
+            if (projectile == null || !enemy.TryStartRangedAttack(_resolvedCollector.position))
+            {
+                return;
+            }
+
+            Vector2 direction = _resolvedCollector.position - enemy.RangedAttackOrigin;
+            projectile.Spawn(
+                enemy.RangedAttackOrigin,
+                direction,
+                enemy.RangedProjectileSpeed,
+                enemy.RangedProjectileDamage,
+                _collectorHealth,
+                _collectorCollider);
         }
 
         private void TrySpawnNextWave()
@@ -270,13 +351,13 @@ namespace CatMouse.Game.Enemy
             if (!_spawnSchedule.TryResolve(
                     currentDistance,
                     out var pattern,
-                    out var difficultyCycle))
+                    out var difficultyLevel))
             {
                 return;
             }
 
             var availableEnemyCount =
-                _spawnSchedule.GetMaximumConcurrentEnemies(pattern, difficultyCycle) -
+                _spawnSchedule.GetMaximumConcurrentEnemies(pattern, difficultyLevel) -
                 CountActiveEnemies();
             if (availableEnemyCount <= 0)
             {
@@ -285,20 +366,28 @@ namespace CatMouse.Game.Enemy
 
             SpawnPattern(
                 pattern,
-                _spawnSchedule.GetEnemySpeed(pattern, difficultyCycle),
-                availableEnemyCount);
+                _spawnSchedule.GetEnemySpeed(pattern, difficultyLevel),
+                availableEnemyCount,
+                _spawnSchedule.GetEnemyHealthMultiplier(difficultyLevel));
             _nextWaveDistanceMeters =
                 currentDistance +
-                _spawnSchedule.GetCooldownDistance(pattern, difficultyCycle);
+                _spawnSchedule.GetCooldownDistance(pattern, difficultyLevel);
         }
 
         private void SpawnPattern(
             SpawnPatternDefinition pattern,
             float enemySpeed,
-            int maximumSpawnCount)
+            int maximumSpawnCount,
+            float healthMultiplier)
         {
-            var firstSpawnX = _worldCamera.transform.position.x + GetHalfViewWidth() + _spawnRightPadding;
-            var spawnCount = Mathf.Min(pattern.EnemyCount, maximumSpawnCount);
+            var spawnCount = Mathf.Min(pattern.GetEnemyCount(), maximumSpawnCount);
+            var encounterSize = pattern.GetEncounterSize();
+            GetSpawnVerticalRange(out var minimumY, out var maximumY);
+
+            var encounterCenter = new Vector2(
+                _worldCamera.transform.position.x + GetHalfViewWidth() + _spawnRightPadding + (encounterSize.x * 0.5f),
+                GetEncounterCenterY(minimumY, maximumY, encounterSize.y));
+            var memberOffsets = new Vector2[spawnCount];
 
             for (var index = 0; index < spawnCount; index++)
             {
@@ -308,15 +397,82 @@ namespace CatMouse.Game.Enemy
                     return;
                 }
 
+                memberOffsets[index] = GetEncounterMemberOffset(index, memberOffsets, encounterSize);
                 var spawnPosition = new Vector3(
-                    firstSpawnX + (index * pattern.HorizontalSpacing),
-                    Mathf.Clamp(pattern.GetVerticalOffset(index), _minimumSpawnY, _maximumSpawnY),
+                    encounterCenter.x + memberOffsets[index].x,
+                    Mathf.Clamp(encounterCenter.y + memberOffsets[index].y, minimumY, maximumY),
                     0f);
                 enemy.Spawn(
                     spawnPosition,
                     enemySpeed,
-                    pattern.GetEnemyArchetype(index));
+                    pattern.GetEnemyArchetype(index),
+                    healthMultiplier);
             }
+        }
+
+        private void GetSpawnVerticalRange(out float minimumY, out float maximumY)
+        {
+            minimumY = _minimumSpawnY;
+            maximumY = _maximumSpawnY;
+
+            if (_verticalBounds != null
+                && _verticalBounds.TryGetMovementRange(out var floorMinimumY, out var floorMaximumY))
+            {
+                minimumY = floorMinimumY;
+                maximumY = floorMaximumY;
+            }
+        }
+
+        private static float GetEncounterCenterY(float minimumY, float maximumY, float encounterHeight)
+        {
+            var halfEncounterHeight = encounterHeight * 0.5f;
+            var innerMinimumY = minimumY + halfEncounterHeight;
+            var innerMaximumY = maximumY - halfEncounterHeight;
+
+            return innerMinimumY <= innerMaximumY
+                ? Random.Range(innerMinimumY, innerMaximumY)
+                : (minimumY + maximumY) * 0.5f;
+        }
+
+        private static Vector2 GetEncounterMemberOffset(
+            int memberIndex,
+            Vector2[] existingOffsets,
+            Vector2 encounterSize)
+        {
+            if (existingOffsets.Length <= 1)
+            {
+                return Vector2.zero;
+            }
+
+            var minimumDistance = Mathf.Min(encounterSize.x, encounterSize.y) * 0.5f;
+            var minimumDistanceSqr = minimumDistance * minimumDistance;
+
+            for (var attempt = 0; attempt < EncounterPlacementAttempts; attempt++)
+            {
+                var candidate = new Vector2(
+                    Random.Range(-encounterSize.x, encounterSize.x) * 0.5f,
+                    Random.Range(-encounterSize.y, encounterSize.y) * 0.5f);
+                var overlapsExistingOffset = false;
+
+                for (var index = 0; index < memberIndex; index++)
+                {
+                    if ((candidate - existingOffsets[index]).sqrMagnitude < minimumDistanceSqr)
+                    {
+                        overlapsExistingOffset = true;
+                        break;
+                    }
+                }
+
+                if (!overlapsExistingOffset)
+                {
+                    return candidate;
+                }
+            }
+
+            var fallbackAngle = memberIndex * Mathf.PI * 2f / existingOffsets.Length;
+            return new Vector2(
+                Mathf.Cos(fallbackAngle) * encounterSize.x * 0.5f,
+                Mathf.Sin(fallbackAngle) * encounterSize.y * 0.5f);
         }
 
         private PrototypeEnemyMover GetAvailableEnemy()
@@ -327,6 +483,20 @@ namespace CatMouse.Game.Enemy
                 if (enemy != null && enemy.IsAvailable)
                 {
                     return enemy;
+                }
+            }
+
+            return null;
+        }
+
+        private PrototypeEnemyProjectile GetAvailableEnemyProjectile()
+        {
+            for (int index = 0; index < _enemyProjectiles.Count; index++)
+            {
+                PrototypeEnemyProjectile projectile = _enemyProjectiles[index];
+                if (projectile != null && projectile.IsAvailable)
+                {
+                    return projectile;
                 }
             }
 

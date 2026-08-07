@@ -16,5 +16,5 @@ MonoBehaviour:
   _attacksPerSecond: 1.82
   _attackRange: 8
   _projectileSpeed: 15
-  _forwardSpeed: 3.5
+  _forwardSpeed: 2.5
   _verticalSpeed: 5

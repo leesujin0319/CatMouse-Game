@@ -12,13 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c8ebcdf2aea7e5b46b57888339a8cdcf, type: 3}
   m_Name: PrototypeWave_000
   m_EditorClassIdentifier: Assembly-CSharp::CatMouse.Game.Enemy.SpawnPatternDefinition
-  _minimumDistanceMeters: 0
-  _cooldownDistanceMeters: 35
+  _minimumDifficultyLevel: 1
+  _cooldownDistanceMeters: 58
   _maximumConcurrentEnemies: 3
-  _enemyCount: 1
+  _minimumEnemyCount: 2
+  _maximumEnemyCount: 3
   _enemyArchetypes:
   - {fileID: 11400000, guid: 18794c37ef230ba4183fdd53f30ee9de, type: 2}
-  _verticalOffsets:
-  - 0
-  _horizontalSpacing: 0.75
-  _enemySpeed: 2.2
+  _minimumEncounterWidth: 2.5
+  _maximumEncounterWidth: 4.5
+  _minimumEncounterHeight: 2
+  _maximumEncounterHeight: 4
+  _enemySpeed: 2

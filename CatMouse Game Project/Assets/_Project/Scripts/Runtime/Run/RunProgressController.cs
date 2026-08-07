@@ -8,7 +8,7 @@ namespace CatMouse.Game.Run
     public sealed class RunProgressController : MonoBehaviour
     {
         private const float DefaultForwardSpeed = 3.5f;
-        private const float DefaultMetersPerWorldUnit = 10f;
+        private const float DefaultMetersPerWorldUnit = 2.5f;
 
         [Header("References")]
         [SerializeField] private PlayerRunStats _runStats;
@@ -22,6 +22,7 @@ namespace CatMouse.Game.Run
 
         public float DistanceMeters { get; private set; }
         public float CurrentForwardSpeed => GetForwardSpeed();
+        public float CurrentWorldScrollDelta { get; private set; }
 
         private void Start()
         {
@@ -30,12 +31,15 @@ namespace CatMouse.Game.Run
 
         private void Update()
         {
+            CurrentWorldScrollDelta = 0f;
+
             if (!Application.isPlaying || _scrollDriver == null)
             {
                 return;
             }
 
             float distanceWorldUnits = GetForwardSpeed() * Time.deltaTime;
+            CurrentWorldScrollDelta = distanceWorldUnits;
             _scrollDriver.position += Vector3.right * distanceWorldUnits;
             DistanceMeters += distanceWorldUnits * _metersPerWorldUnit;
             DistanceChanged?.Invoke(DistanceMeters);

@@ -10,6 +10,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using TMPro;
 
 namespace CatMouse.Game.Editor
 {
@@ -175,9 +176,9 @@ namespace CatMouse.Game.Editor
             RunItemChoiceCardView cardView = card.AddComponent<RunItemChoiceCardView>();
             SerializedObject serializedCard = new(cardView);
             serializedCard.FindProperty("_selectButton").objectReferenceValue = button;
-            serializedCard.FindProperty("_nameLabel").objectReferenceValue = card.transform.Find("ItemName").GetComponent<Text>();
-            serializedCard.FindProperty("_descriptionLabel").objectReferenceValue = card.transform.Find("ItemDescription").GetComponent<Text>();
-            serializedCard.FindProperty("_stackLabel").objectReferenceValue = card.transform.Find("StackLabel").GetComponent<Text>();
+            serializedCard.FindProperty("_nameLabel").objectReferenceValue = card.transform.Find("ItemName").GetComponent<TMP_Text>();
+            serializedCard.FindProperty("_descriptionLabel").objectReferenceValue = card.transform.Find("ItemDescription").GetComponent<TMP_Text>();
+            serializedCard.FindProperty("_stackLabel").objectReferenceValue = card.transform.Find("StackLabel").GetComponent<TMP_Text>();
             serializedCard.ApplyModifiedPropertiesWithoutUndo();
             return cardView;
         }
@@ -325,7 +326,7 @@ namespace CatMouse.Game.Editor
             return uiObject;
         }
 
-        private static Text CreateText(
+        private static TMP_Text CreateText(
             string objectName,
             Transform parent,
             string value,
@@ -344,14 +345,14 @@ namespace CatMouse.Game.Editor
             textRect.sizeDelta = size;
             textRect.anchoredPosition = position;
 
-            Text text = textObject.AddComponent<Text>();
-            text.font = AssetDatabase.LoadAssetAtPath<Font>("Assets/_Project/Font/MemomentKkukkukk.ttf");
+            TMP_Text text = textObject.AddComponent<TextMeshProUGUI>();
+            text.font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/_Project/Art/UI/Fonts/TMP/NEXONLv1GothicBold_TMP.asset");
             text.text = value;
             text.fontSize = fontSize;
-            text.alignment = alignment;
+            text.alignment = TextAlignmentOptions.Center;
             text.color = new Color(0.18f, 0.1f, 0.16f, 1f);
-            text.horizontalOverflow = HorizontalWrapMode.Wrap;
-            text.verticalOverflow = VerticalWrapMode.Overflow;
+            text.textWrappingMode = TextWrappingModes.Normal;
+            text.overflowMode = TextOverflowModes.Overflow;
             return text;
         }
 

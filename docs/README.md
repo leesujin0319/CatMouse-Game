@@ -34,3 +34,4 @@
 - [`asset-production/endless-background-asset-rules.md`](asset-production/endless-background-asset-rules.md): 원경·바닥·근경 수평 심리스 에셋 제작 규칙
 - [`asset-production/ai-generated-character-assets.md`](asset-production/ai-generated-character-assets.md): AI 생성 캐릭터 에셋 제작·임포트 규칙
 - [`asset-production/ai-generated-lobby-assets.md`](asset-production/ai-generated-lobby-assets.md): 로비 배경·기능·메타 성장·장비 UI 이미지의 AI 생성·출처·임포트 기록
+- [`asset-production/ai-generated-run-presentation-assets.md`](asset-production/ai-generated-run-presentation-assets.md): 인게임 그림자 등 AI 생성 프레젠테이션 에셋의 출처·임포트 기록

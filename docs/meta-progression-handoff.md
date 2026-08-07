@@ -101,3 +101,15 @@ bool rewarded = MetaProgressionService.TryApplyRunResult(result);
 1. 카탈로그 자산에서 비용 또는 최대 레벨을 바꾸면 코드 변경 없이 로비 표시와 구매 검증이 함께 바뀝니다.
 2. 모자·갑옷·신발을 각각 장착하고 로비를 재실행하면 슬롯별 장착 ID와 선택 상태가 복원됩니다.
 3. `GameScene` 시작 시 장착 장비 3개와 강화 스택이 `PlayerRunStats`에 적용됩니다.
+
+## 인게임 성장 정보창
+
+- `GameScene`의 `RunMetaStatusPanel`은 고정 프리팹 `Prefabs/UI/Run/RunMetaStatusPanel.prefab`을 사용합니다. 런타임에 UI 오브젝트나 슬롯을 생성하지 않습니다.
+- 상단 `성장 정보` 버튼으로 패널을 열면 모자·갑옷·신발 장착 목록 3개와 영구 강화 목록 5개를 현재 저장 데이터로 갱신합니다.
+- 정보창은 계산식이나 세부 효과 설명을 표시하지 않습니다. 실제 `PlayerRunStats.Current`에 적용된 공격력·공격 속도·공격 범위·투사체 속도·전진 속도·상하 이동 속도만 표시합니다.
+
+## GameScene 코인 보상
+
+- `GameSceneRunRewardInstaller`는 `RunCoinCollector`, HUD 코인 표시, 게임 오버 결과 표시를 `GameScene`에 연결합니다.
+- 런에서 수집한 코인은 `PlayerRunGameOverController`가 게임 오버 시 `RunResult`로 한 번만 전달합니다. 저장된 코인 잔액은 다음 로비 진입 시 같은 `MetaProgressionService` 데이터에서 표시됩니다.
+- 결과창에는 이동 거리, 획득 코인, 다음 목표 거리가 표시됩니다.

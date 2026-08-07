@@ -54,7 +54,7 @@ namespace CatMouse.Game.Enemy
             WarmPool();
         }
 
-        private void Update()
+        private void LateUpdate()
         {
             if (!Application.isPlaying || !HasValidConfiguration())
             {
@@ -154,10 +154,9 @@ namespace CatMouse.Game.Enemy
             var leftBoundary = _worldCamera.transform.position.x
                 - (_worldCamera.orthographicSize * _worldCamera.aspect)
                 - _despawnLeftPadding;
-            var worldScrollSpeed = _runProgress != null
-                ? _runProgress.CurrentForwardSpeed
+            var worldScrollDelta = _runProgress != null
+                ? _runProgress.CurrentWorldScrollDelta
                 : 0f;
-
             for (var index = 0; index < _pool.Count; index++)
             {
                 var cheese = _pool[index];
@@ -168,7 +167,7 @@ namespace CatMouse.Game.Enemy
                         minimumY,
                         maximumY,
                         leftBoundary,
-                        worldScrollSpeed);
+                        worldScrollDelta);
 
                     if (_collector != null)
                     {

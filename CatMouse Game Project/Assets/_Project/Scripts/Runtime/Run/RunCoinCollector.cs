@@ -7,12 +7,17 @@ namespace CatMouse.Game.Run
     public sealed class RunCoinCollector : MonoBehaviour
     {
         private const int DefaultPoolCapacity = 8;
-        private const float DefaultFirstSpawnDistanceMeters = 20f;
-        private const float DefaultSpawnIntervalMeters = 25f;
-        private const float DefaultSpawnRightPadding = 1.25f;
         private const float DefaultDespawnLeftPadding = 1.25f;
         private const float DefaultLifetime = 12f;
         private const float DefaultPickupRadius = 0.6f;
+        private const float DefaultDropChance = 0.35f;
+        private const int DefaultMinimumDropCount = 1;
+        private const int DefaultMaximumDropCount = 2;
+        private const float DefaultMinimumScatterSpeed = 0.9f;
+        private const float DefaultMaximumScatterSpeed = 1.7f;
+        private const float DefaultScatterDeceleration = 3f;
+        private const float DefaultScatterArcDegrees = 70f;
+        private const float ScatterAngleJitter = 0.1f;
 
         [Header("References")]
         [SerializeField] private Camera _worldCamera;
@@ -22,17 +27,22 @@ namespace CatMouse.Game.Run
         [SerializeField] private Transform _coinRoot;
         [SerializeField] private RunCoinPickup _coinTemplate;
 
-        [Header("Spawn")]
+        [Header("Pool")]
         [SerializeField, Min(1)] private int _poolCapacity = DefaultPoolCapacity;
-        [SerializeField, Min(0f)] private float _firstSpawnDistanceMeters = DefaultFirstSpawnDistanceMeters;
-        [SerializeField, Min(0.01f)] private float _spawnIntervalMeters = DefaultSpawnIntervalMeters;
-        [SerializeField, Min(0f)] private float _spawnRightPadding = DefaultSpawnRightPadding;
         [SerializeField, Min(0f)] private float _despawnLeftPadding = DefaultDespawnLeftPadding;
         [SerializeField, Min(0f)] private float _lifetime = DefaultLifetime;
         [SerializeField, Min(0f)] private float _pickupRadius = DefaultPickupRadius;
 
+        [Header("Enemy Defeat Reward")]
+        [SerializeField, Range(0f, 1f)] private float _dropChance = DefaultDropChance;
+        [SerializeField, Min(1)] private int _minimumDropCount = DefaultMinimumDropCount;
+        [SerializeField, Min(1)] private int _maximumDropCount = DefaultMaximumDropCount;
+        [SerializeField, Min(0f)] private float _minimumScatterSpeed = DefaultMinimumScatterSpeed;
+        [SerializeField, Min(0f)] private float _maximumScatterSpeed = DefaultMaximumScatterSpeed;
+        [SerializeField, Min(0f)] private float _scatterDeceleration = DefaultScatterDeceleration;
+        [SerializeField, Range(0f, 180f)] private float _scatterArcDegrees = DefaultScatterArcDegrees;
+
         private readonly List<RunCoinPickup> _pool = new();
-        private float _nextSpawnDistanceMeters;
 
         public int CollectedCoinCount { get; private set; }
         public event System.Action<int> CoinCountChanged;
@@ -40,10 +50,9 @@ namespace CatMouse.Game.Run
         private void Awake()
         {
             WarmPool();
-            _nextSpawnDistanceMeters = _firstSpawnDistanceMeters;
         }
 
-        private void Update()
+        private void LateUpdate()
         {
             if (!Application.isPlaying || !HasValidConfiguration())
             {
@@ -51,18 +60,21 @@ namespace CatMouse.Game.Run
             }
 
             TickActiveCoins();
-            TrySpawnCoin();
         }
 
         private void OnValidate()
         {
             _poolCapacity = Mathf.Max(1, _poolCapacity);
-            _firstSpawnDistanceMeters = Mathf.Max(0f, _firstSpawnDistanceMeters);
-            _spawnIntervalMeters = Mathf.Max(0.01f, _spawnIntervalMeters);
-            _spawnRightPadding = Mathf.Max(0f, _spawnRightPadding);
             _despawnLeftPadding = Mathf.Max(0f, _despawnLeftPadding);
             _lifetime = Mathf.Max(0f, _lifetime);
             _pickupRadius = Mathf.Max(0f, _pickupRadius);
+            _dropChance = Mathf.Clamp01(_dropChance);
+            _minimumDropCount = Mathf.Max(1, _minimumDropCount);
+            _maximumDropCount = Mathf.Max(_minimumDropCount, _maximumDropCount);
+            _minimumScatterSpeed = Mathf.Max(0f, _minimumScatterSpeed);
+            _maximumScatterSpeed = Mathf.Max(_minimumScatterSpeed, _maximumScatterSpeed);
+            _scatterDeceleration = Mathf.Max(0f, _scatterDeceleration);
+            _scatterArcDegrees = Mathf.Clamp(_scatterArcDegrees, 0f, 180f);
         }
 
         private void WarmPool()
@@ -86,13 +98,15 @@ namespace CatMouse.Game.Run
 
         private void TickActiveCoins()
         {
+            if (!_verticalBounds.TryGetMovementRange(out float minimumY, out float maximumY))
+            {
+                return;
+            }
+
             float leftBoundary = _worldCamera.transform.position.x
                 - (_worldCamera.orthographicSize * _worldCamera.aspect)
                 - _despawnLeftPadding;
-            float worldScrollSpeed = _runProgress != null
-                ? _runProgress.CurrentForwardSpeed
-                : 0f;
-
+            float worldScrollDelta = _runProgress.CurrentWorldScrollDelta;
             for (int index = 0; index < _pool.Count; index++)
             {
                 RunCoinPickup coin = _pool[index];
@@ -101,7 +115,7 @@ namespace CatMouse.Game.Run
                     continue;
                 }
 
-                coin.Tick(Time.deltaTime, leftBoundary, worldScrollSpeed);
+                coin.Tick(Time.deltaTime, minimumY, maximumY, leftBoundary, worldScrollDelta);
                 if (coin.TryCollect(_collector.position, _pickupRadius))
                 {
                     CollectedCoinCount++;
@@ -110,26 +124,42 @@ namespace CatMouse.Game.Run
             }
         }
 
-        private void TrySpawnCoin()
+        public bool TryDrop(Vector3 position, Vector2 scatterDirection)
         {
-            if (_runProgress.DistanceMeters < _nextSpawnDistanceMeters)
+            if (!HasValidConfiguration() || Random.value > _dropChance)
             {
-                return;
+                return false;
             }
 
-            RunCoinPickup coin = GetAvailableCoin();
-            if (coin == null || !_verticalBounds.TryGetMovementRange(out float minimumY, out float maximumY))
+            var direction = scatterDirection.sqrMagnitude > Mathf.Epsilon
+                ? scatterDirection.normalized
+                : Vector2.left;
+            var baseAngle = Mathf.Atan2(direction.y, direction.x);
+            var halfArcRadians = _scatterArcDegrees * 0.5f * Mathf.Deg2Rad;
+            var dropCount = Random.Range(_minimumDropCount, _maximumDropCount + 1);
+            var hasDroppedCoin = false;
+
+            for (int index = 0; index < dropCount; index++)
             {
-                return;
+                RunCoinPickup coin = GetAvailableCoin();
+                if (coin == null)
+                {
+                    break;
+                }
+
+                var arcPosition = dropCount > 1
+                    ? index / (dropCount - 1f)
+                    : 0.5f;
+                var angle = baseAngle
+                    + Mathf.Lerp(-halfArcRadians, halfArcRadians, arcPosition)
+                    + Random.Range(-ScatterAngleJitter, ScatterAngleJitter);
+                var velocityDirection = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
+                var speed = Random.Range(_minimumScatterSpeed, _maximumScatterSpeed);
+                coin.Spawn(position, velocityDirection * speed, _scatterDeceleration, _lifetime);
+                hasDroppedCoin = true;
             }
 
-            float halfViewWidth = _worldCamera.orthographicSize * _worldCamera.aspect;
-            Vector3 spawnPosition = new Vector3(
-                _worldCamera.transform.position.x + halfViewWidth + _spawnRightPadding,
-                Random.Range(minimumY, maximumY),
-                0f);
-            coin.Spawn(spawnPosition, _lifetime);
-            _nextSpawnDistanceMeters += _spawnIntervalMeters;
+            return hasDroppedCoin;
         }
 
         private RunCoinPickup GetAvailableCoin()

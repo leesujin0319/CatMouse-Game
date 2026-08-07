@@ -12,7 +12,6 @@ namespace CatMouse.Game.Enemy
         private const int DefaultMaximumHealth = 1;
         private const int DefaultContactDamage = 5;
         private const float HitFeedbackDuration = 0.12f;
-        private const float HitScaleMultiplier = 1.12f;
         private const float PoisonTickInterval = 1f;
         private const float PixelsPerUnit = 12f;
         private const string CharacterSortingLayer = "Characters";
@@ -22,11 +21,12 @@ namespace CatMouse.Game.Enemy
         private static Sprite s_prototypeSprite;
 
         [SerializeField] private SpriteRenderer _spriteRenderer;
+        [SerializeField] private RunSpriteMotion _presentation;
         [SerializeField] private Color _color = new Color(0.88f, 0.33f, 0.25f, 1f);
         [SerializeField, Min(1)] private int _maximumHealth = DefaultMaximumHealth;
         [SerializeField, Min(1)] private int _contactDamage = DefaultContactDamage;
 
-        private float _speed;
+        private float _approachSpeed;
         private float _poisonRemainingTime;
         private float _poisonTickTimer;
         private int _poisonDamage;
@@ -37,43 +37,63 @@ namespace CatMouse.Game.Enemy
         private Color _baseColor;
         private Vector3 _baseLocalScale;
         private Vector3 _spawnLocalScale;
+        private float _nextRangedAttackTime;
 
         public bool IsAvailable => !gameObject.activeSelf;
         public EnemyArchetypeDefinition CurrentArchetype { get; private set; }
         public EnemyEquipmentDefinition CurrentEquipment { get; private set; }
         public int CurrentHealth => _currentHealth;
         public int MaximumHealth { get; private set; }
+        public float DifficultyHealthMultiplier { get; private set; } = 1f;
         public int ContactDamage => _currentContactDamage;
         public float NormalizedHealth => MaximumHealth > 0 ? _currentHealth / (float)MaximumHealth : 0f;
+        public bool UsesRangedAttack => CurrentArchetype != null
+            && CurrentArchetype.AttackType == EnemyAttackType.Ranged;
+        public float RangedProjectileSpeed => CurrentArchetype != null
+            ? CurrentArchetype.RangedProjectileSpeed
+            : 0f;
+        public int RangedProjectileDamage => CurrentArchetype != null
+            ? CurrentArchetype.RangedProjectileDamage
+            : 0;
+        public Vector3 RangedAttackOrigin => _spriteRenderer != null
+            ? _spriteRenderer.bounds.center
+            : transform.position;
         public event Action<Vector3, Vector2> Defeated;
 
         public void Spawn(
             Vector3 position,
-            float speed,
-            EnemyArchetypeDefinition archetype)
+            float approachSpeed,
+            EnemyArchetypeDefinition archetype,
+            float healthMultiplier)
         {
             transform.position = position;
             gameObject.SetActive(true);
             CurrentArchetype = archetype;
             CurrentEquipment = archetype != null ? archetype.Equipment : null;
 
-            var speedMultiplier = archetype != null ? archetype.SpeedMultiplier : 1f;
             var visualScale = archetype != null ? archetype.VisualScale : 1f;
             var archetypeSprite = archetype != null ? archetype.Sprite : null;
             var maximumHealth = archetype != null ? archetype.MaximumHealth : _maximumHealth;
             var contactDamage = archetype != null ? archetype.ContactDamage : _contactDamage;
-            var equipmentSpeedMultiplier = CurrentEquipment != null
-                ? CurrentEquipment.SpeedMultiplier
-                : 1f;
+            DifficultyHealthMultiplier = Mathf.Max(1f, healthMultiplier);
             MaximumHealth = Mathf.Max(
                 1,
-                maximumHealth + (CurrentEquipment != null ? CurrentEquipment.HealthBonus : 0));
+                Mathf.CeilToInt(
+                    (maximumHealth + (CurrentEquipment != null ? CurrentEquipment.HealthBonus : 0)) *
+                    DifficultyHealthMultiplier));
             _currentHealth = MaximumHealth;
             _currentContactDamage = Mathf.Max(
                 1,
                 contactDamage + (CurrentEquipment != null ? CurrentEquipment.ContactDamageBonus : 0));
-            _speed = Mathf.Max(0f, speed * speedMultiplier * equipmentSpeedMultiplier);
+            var speedMultiplier = archetype != null ? archetype.SpeedMultiplier : 1f;
+            var equipmentSpeedMultiplier = CurrentEquipment != null
+                ? CurrentEquipment.SpeedMultiplier
+                : 1f;
+            _approachSpeed = Mathf.Max(
+                0f,
+                approachSpeed * ((speedMultiplier * equipmentSpeedMultiplier) - 1f));
             _hitFeedbackRemaining = 0f;
+            _nextRangedAttackTime = 0f;
             ClearPoison();
             _spriteRenderer.sprite = archetypeSprite != null
                 ? archetypeSprite
@@ -92,6 +112,29 @@ namespace CatMouse.Game.Enemy
             _spawnLocalScale = _baseLocalScale * normalizedVisualScale;
             transform.localScale = _spawnLocalScale;
             GetComponent<CharacterSpriteCollider2D>()?.Refresh();
+        }
+
+        public bool TryStartRangedAttack(Vector3 targetPosition)
+        {
+            if (!UsesRangedAttack || Time.time < _nextRangedAttackTime)
+            {
+                return false;
+            }
+
+            float attackRange = CurrentArchetype.RangedAttackRange;
+            if ((targetPosition - RangedAttackOrigin).sqrMagnitude > attackRange * attackRange)
+            {
+                return false;
+            }
+
+            _nextRangedAttackTime = Time.time + CurrentArchetype.RangedAttackCooldown;
+            PlayAttackPresentation();
+            return true;
+        }
+
+        public void PlayAttackPresentation()
+        {
+            _presentation?.PlayAttack();
         }
 
         public bool TryTakeDamage(int damage, Vector2 hitDirection)
@@ -132,7 +175,7 @@ namespace CatMouse.Game.Enemy
                 : Vector2.right;
         }
 
-        public void Tick(float deltaTime, float leftDespawnBoundary)
+        public void Tick(float deltaTime, float leftDespawnBoundary, float worldScrollDelta)
         {
             TickPoison(deltaTime);
             if (IsAvailable)
@@ -141,8 +184,7 @@ namespace CatMouse.Game.Enemy
             }
 
             UpdateHitFeedback(deltaTime);
-            transform.position += Vector3.left * (_speed * deltaTime);
-
+            transform.position += Vector3.left * (worldScrollDelta + (_approachSpeed * deltaTime));
             if (transform.position.x < leftDespawnBoundary)
             {
                 gameObject.SetActive(false);
@@ -188,6 +230,7 @@ namespace CatMouse.Game.Enemy
         {
             _baseLocalScale = transform.localScale;
             _spawnLocalScale = _baseLocalScale;
+            _presentation ??= GetComponentInChildren<RunSpriteMotion>();
             EnsurePresentation();
         }
 
@@ -226,12 +269,10 @@ namespace CatMouse.Game.Enemy
             _hitFeedbackRemaining = Mathf.Max(0f, _hitFeedbackRemaining - deltaTime);
             var normalizedRemaining = _hitFeedbackRemaining / HitFeedbackDuration;
             _spriteRenderer.color = Color.Lerp(_baseColor, HitColor, normalizedRemaining);
-            transform.localScale = _spawnLocalScale * Mathf.Lerp(1f, HitScaleMultiplier, normalizedRemaining);
 
             if (_hitFeedbackRemaining <= 0f)
             {
                 _spriteRenderer.color = _baseColor;
-                transform.localScale = _spawnLocalScale;
             }
         }
 

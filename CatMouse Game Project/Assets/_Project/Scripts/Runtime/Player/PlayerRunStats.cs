@@ -194,25 +194,32 @@ namespace CatMouse.Game.Player
             float flatBonus = 0f;
             float percentBonus = 0f;
 
-            foreach (KeyValuePair<RunItemDefinition, int> itemStack in _itemStacks)
-            {
-                AddModifierValues(itemStack, statType, ref flatBonus, ref percentBonus);
-            }
+            AddModifierTotals(_itemStacks, statType, null, ref flatBonus, ref percentBonus);
+            AddModifierTotals(_persistentItemStacks, statType, null, ref flatBonus, ref percentBonus);
+            AddModifierTotals(
+                _temporaryItemStacks,
+                statType,
+                _temporaryItemStrengths,
+                ref flatBonus,
+                ref percentBonus);
 
-            foreach (KeyValuePair<RunItemDefinition, int> itemStack in _persistentItemStacks)
-            {
-                AddModifierValues(itemStack, statType, ref flatBonus, ref percentBonus);
-            }
+            return (baseValue + flatBonus) * (1f + percentBonus);
+        }
 
-            foreach (KeyValuePair<RunItemDefinition, int> itemStack in _temporaryItemStacks)
+        private static void AddModifierTotals(
+            Dictionary<RunItemDefinition, int> itemStacks,
+            PlayerStatType statType,
+            Dictionary<RunItemDefinition, float> strengths,
+            ref float flatBonus,
+            ref float percentBonus)
+        {
+            foreach (KeyValuePair<RunItemDefinition, int> itemStack in itemStacks)
             {
-                float strength = _temporaryItemStrengths.TryGetValue(itemStack.Key, out float temporaryStrength)
-                    ? temporaryStrength
+                float strength = strengths != null && strengths.TryGetValue(itemStack.Key, out float currentStrength)
+                    ? currentStrength
                     : 1f;
                 AddModifierValues(itemStack, statType, ref flatBonus, ref percentBonus, strength);
             }
-
-            return (baseValue + flatBonus) * (1f + percentBonus);
         }
 
         private static void AddModifierValues(
