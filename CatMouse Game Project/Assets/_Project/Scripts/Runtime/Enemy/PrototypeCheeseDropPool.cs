@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using CatMouse.Game.Player;
+using CatMouse.Game.Presentation;
 using CatMouse.Game.Run;
 using UnityEngine;
 
@@ -25,6 +26,7 @@ namespace CatMouse.Game.Enemy
         [SerializeField] private RunProgressController _runProgress;
         [SerializeField] private PlayerRunHealth _runHealth;
         [SerializeField] private RunExperienceController _experience;
+        [SerializeField] private RunVisualEffectPool _visualEffectPool;
         [SerializeField] private Transform _cheeseRoot;
         [SerializeField] private PrototypeCheeseDrop _cheeseTemplate;
         private Transform _collector;
@@ -179,6 +181,7 @@ namespace CatMouse.Game.Enemy
 
                         if (cheese.TryCollect(_collector.position, _pickupRadius))
                         {
+                            _visualEffectPool?.PlayPickup(cheese.transform.position);
                             _runHealth?.Restore(_healthRestorePerCheese);
                             _experience?.GainExperience(_experiencePerCheese);
                         }

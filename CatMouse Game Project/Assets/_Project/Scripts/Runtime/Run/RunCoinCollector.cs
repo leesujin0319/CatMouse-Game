@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using CatMouse.Game.Presentation;
 using UnityEngine;
 
 namespace CatMouse.Game.Run
@@ -24,6 +25,7 @@ namespace CatMouse.Game.Run
         [SerializeField] private RunVerticalBounds _verticalBounds;
         [SerializeField] private RunProgressController _runProgress;
         [SerializeField] private Transform _collector;
+        [SerializeField] private RunVisualEffectPool _visualEffectPool;
         [SerializeField] private Transform _coinRoot;
         [SerializeField] private RunCoinPickup _coinTemplate;
 
@@ -118,6 +120,7 @@ namespace CatMouse.Game.Run
                 coin.Tick(Time.deltaTime, minimumY, maximumY, leftBoundary, worldScrollDelta);
                 if (coin.TryCollect(_collector.position, _pickupRadius))
                 {
+                    _visualEffectPool?.PlayPickup(coin.transform.position);
                     CollectedCoinCount++;
                     CoinCountChanged?.Invoke(CollectedCoinCount);
                 }

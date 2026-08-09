@@ -1,4 +1,5 @@
 using CatMouse.Game.Enemy;
+using CatMouse.Game.Presentation;
 using UnityEngine;
 
 namespace CatMouse.Game.Player
@@ -17,6 +18,8 @@ namespace CatMouse.Game.Player
         private static Sprite s_prototypeSprite;
 
         [SerializeField] private SpriteRenderer _spriteRenderer;
+        [SerializeField] private Sprite _presentationSprite;
+        [SerializeField] private RunVisualEffectPool _visualEffectPool;
 
         private PrototypeEnemySpawner _enemySpawner;
         private float _speed;
@@ -62,6 +65,7 @@ namespace CatMouse.Game.Player
                     _damage,
                     Vector2.right))
             {
+                _visualEffectPool?.PlayImpact(nextPosition);
                 Deactivate();
                 return;
             }
@@ -92,7 +96,9 @@ namespace CatMouse.Game.Player
                 _spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
             }
 
-            _spriteRenderer.sprite = GetPrototypeSprite();
+            _spriteRenderer.sprite = _presentationSprite != null
+                ? _presentationSprite
+                : GetPrototypeSprite();
             _spriteRenderer.sortingLayerName = CharacterSortingLayer;
             _spriteRenderer.sortingOrder = 3;
         }

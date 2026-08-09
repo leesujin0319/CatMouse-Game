@@ -14,6 +14,7 @@ namespace CatMouse.Game.Run
         private static Sprite s_coinSprite;
 
         [SerializeField] private SpriteRenderer _spriteRenderer;
+        [SerializeField] private Sprite _presentationSprite;
 
         private Vector2 _velocity;
         private float _deceleration;
@@ -85,7 +86,9 @@ namespace CatMouse.Game.Run
                 _spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
             }
 
-            _spriteRenderer.sprite = GetCoinSprite();
+            _spriteRenderer.sprite = _presentationSprite != null
+                ? _presentationSprite
+                : GetCoinSprite();
             _spriteRenderer.sortingLayerName = CharacterSortingLayer;
             _spriteRenderer.sortingOrder = 3;
 

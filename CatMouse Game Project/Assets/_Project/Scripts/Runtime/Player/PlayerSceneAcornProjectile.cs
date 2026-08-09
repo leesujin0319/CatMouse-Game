@@ -1,4 +1,5 @@
 using CatMouse.Game.Enemy;
+using CatMouse.Game.Presentation;
 using UnityEngine;
 
 namespace CatMouse.Game.Player
@@ -16,8 +17,10 @@ namespace CatMouse.Game.Player
         private static Sprite s_acornSprite;
 
         [SerializeField] private SpriteRenderer _spriteRenderer;
+        [SerializeField] private Sprite _presentationSprite;
         [SerializeField] private CircleCollider2D _hitCollider;
         [SerializeField] private Rigidbody2D _rigidbody;
+        [SerializeField] private RunVisualEffectPool _visualEffectPool;
 
         private PlayerSceneTestEnemy _target;
         private PlayerRunHealth _runHealth;
@@ -126,9 +129,13 @@ namespace CatMouse.Game.Player
             float movement = _speed * deltaTime;
             if (distance <= _hitRadius + movement)
             {
-                if (_target.TryTakeDamage(_damage, out bool wasDefeated) && wasDefeated)
+                if (_target.TryTakeDamage(_damage, out bool wasDefeated))
                 {
-                    _runHealth?.Restore(_target.HealthRestoreOnDefeat);
+                    _visualEffectPool?.PlayImpact(transform.position);
+                    if (wasDefeated)
+                    {
+                        _runHealth?.Restore(_target.HealthRestoreOnDefeat);
+                    }
                 }
 
                 Deactivate();
@@ -165,6 +172,7 @@ namespace CatMouse.Game.Player
                 enemy.ApplyPoison(_poisonDamage, _poisonDuration, _direction);
             }
 
+            _visualEffectPool?.PlayImpact(transform.position);
             Deactivate();
         }
 
@@ -192,7 +200,9 @@ namespace CatMouse.Game.Player
                 _spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
             }
 
-            _spriteRenderer.sprite = GetAcornSprite();
+            _spriteRenderer.sprite = _presentationSprite != null
+                ? _presentationSprite
+                : GetAcornSprite();
             _spriteRenderer.sortingLayerName = CharacterSortingLayer;
             _spriteRenderer.sortingOrder = 3;
 

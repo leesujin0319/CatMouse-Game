@@ -13,6 +13,7 @@ namespace CatMouse.Game.Enemy
         private static Sprite s_prototypeSprite;
 
         [SerializeField] private SpriteRenderer _spriteRenderer;
+        [SerializeField] private Sprite _presentationSprite;
         [SerializeField] private Color _color = new Color(1f, 0.73f, 0.08f, 1f);
 
         private Vector2 _velocity;
@@ -105,7 +106,9 @@ namespace CatMouse.Game.Enemy
                 _spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
             }
 
-            _spriteRenderer.sprite = GetPrototypeSprite();
+            _spriteRenderer.sprite = _presentationSprite != null
+                ? _presentationSprite
+                : GetPrototypeSprite();
             _spriteRenderer.color = _color;
             _spriteRenderer.sortingLayerName = CharacterSortingLayer;
             _spriteRenderer.sortingOrder = 2;
